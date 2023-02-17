@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -121,13 +121,13 @@ static void set_feature_config(void)
 
         /* Set any-motion configuration settings */
         config[1].cfg.any_motion.slope_thres = 9;
-        config[1].cfg.any_motion.hysteresis = 9;
+        config[1].cfg.any_motion.hysteresis = 5;
         config[1].cfg.any_motion.duration = 9;
 
         /* Set no-motion configuration settings */
         config[2].cfg.no_motion.slope_thres = 8;
         config[2].cfg.no_motion.duration = 9;
-        config[2].cfg.no_motion.hysteresis = 9;
+        config[2].cfg.no_motion.hysteresis = 5;
 
         /* Assign the features to user and alternate switch
          * NOTE: Any of one the feature (either any-motion or no-motion) can be assigned to alternate configuration.

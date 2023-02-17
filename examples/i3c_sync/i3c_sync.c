@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -24,7 +24,7 @@
 /******************************************************************************/
 /*!         Structure Definition                                              */
 
-/* Structure to define accelerometer and gyroscope configuration. */
+/*! Structure to define accelerometer and gyroscope configuration. */
 struct bmi3_sens_config config[2];
 
 /******************************************************************************/
@@ -77,7 +77,7 @@ int main(void)
     uint16_t sample_rate = 0x0032;
 
     /* Variable to set the delay time of i3c sync */
-    uint8_t delay_time = BMI3_I3C_SYNC_ODR_50HZ;
+    uint8_t delay_time = BMI3_I3C_SYNC_DIVISION_FACTOR_11;
 
     /* Variable to set the i3c sync ODR */
     uint8_t odr = BMI3_I3C_SYNC_ODR_50HZ;

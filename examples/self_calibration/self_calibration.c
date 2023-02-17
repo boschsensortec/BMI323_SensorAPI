@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -61,9 +61,6 @@ int main(void)
     /* Structure instance of gyro dp gain offset */
     struct bmi3_gyr_dp_gain_offset gyr_dp_gain_offset = { 0 };
 
-    /* Structure instance of gyro user gain offset */
-    struct bmi3_gyr_usr_gain_offset gyr_usr_gain_offset = { 0 };
-
     /* Function to select interface between SPI and I2C, according to that the device structure gets updated.
      * Interface reference is given as a parameter
      * For I2C : BMI3_I2C_INTF
@@ -94,7 +91,7 @@ int main(void)
                 }
                 else
                 {
-                    printf("Self-calibration for offset mode\n");
+                    printf("\n\nSelf-calibration for offset mode\n");
                 }
 
                 /* Performs self-calibration for either sensitivity, offset or both */
@@ -126,26 +123,36 @@ int main(void)
                     }
                 }
 
-                printf("Result of self-calibration error is %d\n", sc_rslt.sc_error_rslt);
-                printf("Result of self-calibration is %d\n", sc_rslt.gyro_sc_rslt);
+                printf("Result of self-calibration error \n");
+
+                if (((sc_rslt.sc_error_rslt & BMI3_SET_LOW_NIBBLE) == BMI3_NO_ERROR_MASK))
+                {
+                    printf("\tNo error\n");
+                }
+                else
+                {
+                    printf("\tError: %d\n", sc_rslt.sc_error_rslt & BMI3_SET_LOW_NIBBLE);
+                }
+
+                if (sc_rslt.sc_error_rslt & BMI3_SC_ST_COMPLETE_MASK)
+                {
+                    printf("\tSelf-calibration procedure is completed.\n");
+                }
+                else
+                {
+                    printf("\tError: Self-calibration procedure is not completed\n");
+                }
+
+                printf("\nResult of self-calibration is %d\n", sc_rslt.gyro_sc_rslt);
 
                 rslt = bmi323_get_gyro_dp_off_dgain(&gyr_dp_gain_offset, &dev);
-                bmi3_error_codes_print_result("bmi3_get_gyro_off_dgain", rslt);
+                bmi3_error_codes_print_result("bmi323_get_gyro_off_dgain", rslt);
                 printf("Result of gyro dp offset x is %d\n", gyr_dp_gain_offset.gyr_dp_off_x);
                 printf("Result of gyro dp offset y is %d\n", gyr_dp_gain_offset.gyr_dp_off_y);
                 printf("Result of gyro dp offset z is %d\n", gyr_dp_gain_offset.gyr_dp_off_z);
-                printf("Result of gyro dp gain x is %d\n", gyr_dp_gain_offset.gyr_dp_gain_x);
-                printf("Result of gyro dp gain y is %d\n", gyr_dp_gain_offset.gyr_dp_gain_y);
-                printf("Result of gyro dp gain z is %d\n", gyr_dp_gain_offset.gyr_dp_gain_z);
-
-                rslt = bmi323_get_user_gyro_off_dgain(&gyr_usr_gain_offset, &dev);
-                bmi3_error_codes_print_result("bmi3_get_gyr_usr_off_gain", rslt);
-                printf("Result of gyro usr offset x is %d\n", gyr_usr_gain_offset.gyr_usr_off_x);
-                printf("Result of gyro usr offset y is %d\n", gyr_usr_gain_offset.gyr_usr_off_y);
-                printf("Result of gyro usr offset z is %d\n", gyr_usr_gain_offset.gyr_usr_off_z);
-                printf("Result of gyro usr gain x is %d\n", gyr_usr_gain_offset.gyr_usr_gain_x);
-                printf("Result of gyro usr gain y is %d\n", gyr_usr_gain_offset.gyr_usr_gain_y);
-                printf("Result of gyro usr gain z is %d\n", gyr_usr_gain_offset.gyr_usr_gain_z);
+                printf("Result of gyro dp gain x is %d\n", gyr_dp_gain_offset.gyr_dp_dgain_x);
+                printf("Result of gyro dp gain y is %d\n", gyr_dp_gain_offset.gyr_dp_dgain_y);
+                printf("Result of gyro dp gain z is %d\n", gyr_dp_gain_offset.gyr_dp_dgain_z);
             }
         }
     }

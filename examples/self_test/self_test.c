@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -55,11 +55,11 @@ int main(void)
                 }
                 else if ((idx + 1) == BMI3_ST_GYRO_ONLY)
                 {
-                    printf("Self-test for gyro only\n");
+                    printf("\n\nSelf-test for gyro only\n");
                 }
                 else
                 {
-                    printf("Self-test for both accel and gyro\n");
+                    printf("\n\nSelf-test for both accel and gyro\n");
                 }
 
                 /* Performs self-test for either accel, gyro or both */

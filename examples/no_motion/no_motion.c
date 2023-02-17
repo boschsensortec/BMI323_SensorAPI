@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -137,7 +137,7 @@ static int8_t set_feature_config(struct bmi3_dev *dev)
         config[1].cfg.no_motion.slope_thres = 9;
 
         /* Hysteresis for the slope of the acceleration signal. Range = 0 to 1023. */
-        config[1].cfg.no_motion.hysteresis = 9;
+        config[1].cfg.no_motion.hysteresis = 5;
 
         /* Minimum duration for which the slope shall be greater than threshold for motion detection.
          * Range = 0 to 8191.

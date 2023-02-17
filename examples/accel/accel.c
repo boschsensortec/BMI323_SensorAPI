@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -172,7 +172,7 @@ static int8_t set_accel_config(struct bmi3_dev *dev)
         {
             /* NOTE: The user can change the following configuration parameters according to their requirement. */
             /* Output Data Rate. By default ODR is set as 100Hz for accel. */
-            config.cfg.acc.odr = BMI3_ACC_ODR_200HZ;
+            config.cfg.acc.odr = BMI3_ACC_ODR_100HZ;
 
             /* Gravity range of the sensor (+/- 2G, 4G, 8G, 16G). */
             config.cfg.acc.range = BMI3_ACC_RANGE_2G;

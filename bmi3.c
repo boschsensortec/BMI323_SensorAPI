@@ -1,46 +1,47 @@
 /**
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
- *
- * BSD-3-Clause
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @file       bmi3.c
- * @date       2022-08-31
- * @version    v2.0.0
- *
- */
+* Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
+*
+* BSD-3-Clause
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its
+*    contributors may be used to endorse or promote products derived from
+*    this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+* @file       bmi3.c
+* @date       2023-02-17
+* @version    v2.1.0
+*
+*/
 
 /******************************************************************************/
 
 /*!  @name          Header Files                                  */
 /******************************************************************************/
 #include "bmi3.h"
+
 #ifdef __KERNEL__
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -55,63 +56,60 @@
 
 /*! Array to store config array code */
 static uint8_t bmi3_config_array_code[] = {
-    0x48, 0x02, 0xad, 0x01, 0x01, 0x2e, 0xa0, 0xf2, 0x09, 0xbc, 0x20, 0x50, 0x0d, 0xb8, 0x03, 0x2e, 0xeb, 0x03, 0x01,
+    0x48, 0x02, 0x94, 0x01, 0x01, 0x2e, 0xa0, 0xf2, 0x09, 0xbc, 0x20, 0x50, 0x0d, 0xb8, 0x03, 0x2e, 0xd0, 0x03, 0x01,
     0x1a, 0xf0, 0x7f, 0xeb, 0x7f, 0x17, 0x2f, 0x20, 0x30, 0x21, 0x2e, 0xd2, 0x01, 0x98, 0x2e, 0x1d, 0xc7, 0x98, 0x2e,
     0x2f, 0xc7, 0x98, 0x2e, 0x8e, 0xc0, 0x03, 0x2e, 0xf6, 0x01, 0x12, 0x24, 0xff, 0xe3, 0x4a, 0x08, 0x00, 0x30, 0x21,
-    0x2e, 0xcd, 0x01, 0xf2, 0x6f, 0x21, 0x2e, 0xd1, 0x01, 0x25, 0x2e, 0xeb, 0x03, 0x23, 0x2e, 0xf6, 0x01, 0xeb, 0x6f,
-    0xe0, 0x5f, 0xb8, 0x2e, 0x03, 0x2e, 0xac, 0x01, 0x01, 0x2e, 0x21, 0xf1, 0x92, 0xbc, 0x41, 0x0a, 0x01, 0x2e, 0xea,
-    0x03, 0x01, 0x90, 0x23, 0x2e, 0x21, 0xf1, 0x14, 0x2f, 0x10, 0x24, 0xe0, 0xf4, 0x01, 0x30, 0x12, 0x24, 0x00, 0x10,
-    0x13, 0x24, 0x00, 0x20, 0x04, 0x30, 0x05, 0x40, 0x95, 0x09, 0x80, 0xb3, 0x01, 0x2f, 0x5d, 0x0b, 0x05, 0x42, 0x01,
-    0x89, 0x02, 0x80, 0x03, 0xa3, 0xf5, 0x2f, 0xc0, 0x2e, 0x23, 0x2e, 0xea, 0x03, 0xb8, 0x2e, 0xb8, 0x2e, 0x01, 0x2e,
-    0xf6, 0x01, 0x86, 0xbc, 0x9f, 0xb8, 0x41, 0x90, 0x06, 0x2f, 0x11, 0x24, 0xff, 0xfd, 0x01, 0x08, 0x21, 0x2e, 0xf6,
-    0x01, 0x80, 0x2e, 0x43, 0xeb, 0xb8, 0x2e, 0x10, 0x50, 0xfb, 0x7f, 0x98, 0x2e, 0x48, 0x02, 0xfb, 0x6f, 0xf0, 0x5f,
-    0x80, 0x2e, 0x16, 0x03, 0x80, 0x2e, 0x48, 0x02, 0x01, 0x2e, 0xec, 0x03, 0x10, 0x50, 0x00, 0x90, 0x0e, 0x2f, 0x01,
-    0x2e, 0xa0, 0xf2, 0x09, 0xbc, 0x0d, 0xb8, 0x31, 0x30, 0x08, 0x04, 0xfb, 0x7f, 0x21, 0x2e, 0xd5, 0x01, 0x98, 0x2e,
-    0x18, 0xe5, 0x10, 0x30, 0x21, 0x2e, 0xec, 0x03, 0xfb, 0x6f, 0xf0, 0x5f, 0xb8, 0x2e, 0x05, 0x2e, 0xf6, 0x01, 0x01,
-    0x2e, 0xae, 0x00, 0xab, 0xbc, 0x0a, 0xbc, 0x9f, 0xb8, 0x0f, 0xb8, 0x30, 0x50, 0x41, 0x08, 0x40, 0xb2, 0xfb, 0x7f,
-    0x1d, 0x2f, 0xf4, 0x3e, 0x10, 0x24, 0x16, 0xf1, 0x14, 0x09, 0x29, 0x2e, 0xf6, 0x01, 0x11, 0x40, 0x02, 0x40, 0x09,
-    0x2e, 0xad, 0x00, 0x13, 0x24, 0xac, 0x00, 0x98, 0x2e, 0xcd, 0x03, 0x12, 0x30, 0x11, 0x24, 0xf9, 0x01, 0xc2, 0x08,
-    0x40, 0x40, 0x14, 0x24, 0xff, 0xdf, 0xbd, 0xbd, 0x04, 0x08, 0x03, 0x0a, 0x50, 0x42, 0x00, 0x2e, 0x40, 0x40, 0x02,
-    0x0a, 0x02, 0x2c, 0x40, 0x42, 0x12, 0x30, 0x10, 0x24, 0x00, 0x10, 0x03, 0x2e, 0x80, 0xf0, 0x41, 0x08, 0x40, 0xb2,
-    0x19, 0x2f, 0x03, 0x2e, 0xf6, 0x01, 0x9b, 0xbc, 0x9f, 0xb8, 0x41, 0x90, 0x19, 0x2f, 0x25, 0x2e, 0xea, 0x03, 0x11,
-    0x24, 0xec, 0x00, 0x02, 0x30, 0xe1, 0x7f, 0xd2, 0x7f, 0x12, 0x24, 0xff, 0x0f, 0x41, 0x40, 0x98, 0x2e, 0x64, 0xce,
-    0xd2, 0x6f, 0xe1, 0x6f, 0x81, 0x84, 0x50, 0x42, 0x83, 0xa2, 0xf2, 0x2f, 0x00, 0x2e, 0x06, 0x2d, 0x05, 0x2e, 0x05,
-    0xf8, 0x01, 0x32, 0x8a, 0x0a, 0x25, 0x2e, 0x05, 0xf8, 0xfb, 0x6f, 0xd0, 0x5f, 0xb8, 0x2e, 0xb8, 0x2e, 0x01, 0x2e,
-    0x12, 0xf1, 0x03, 0x2e, 0xbc, 0x00, 0x96, 0xbc, 0x20, 0x50, 0x96, 0xb8, 0x00, 0xa6, 0x54, 0xb0, 0xfb, 0x7f, 0x53,
-    0x2f, 0x03, 0x2e, 0xee, 0x03, 0x40, 0x90, 0x26, 0x25, 0x01, 0x30, 0x07, 0x30, 0x13, 0x30, 0x19, 0x2f, 0x09, 0x2e,
-    0xf0, 0x03, 0x44, 0x0e, 0x02, 0x2f, 0x02, 0x01, 0x29, 0x2e, 0xf0, 0x03, 0x09, 0x2e, 0xf0, 0x03, 0xc4, 0x0e, 0x0e,
-    0x2f, 0x27, 0x2e, 0xee, 0x03, 0x44, 0x31, 0x05, 0x30, 0x41, 0x8b, 0x20, 0x19, 0x50, 0xa1, 0xfb, 0x2f, 0xf4, 0x3f,
-    0x20, 0x05, 0x94, 0x04, 0x25, 0x2e, 0xf1, 0x03, 0x2d, 0x2e, 0xef, 0x03, 0x05, 0x2e, 0xee, 0x03, 0x81, 0x90, 0xe0,
-    0x7f, 0x0f, 0x2f, 0x05, 0x2e, 0xed, 0x03, 0x50, 0x0f, 0x07, 0x2f, 0x05, 0x2e, 0xbc, 0x00, 0x13, 0x24, 0x00, 0xfc,
-    0x93, 0x08, 0x25, 0x2e, 0xbc, 0x00, 0x04, 0x2d, 0x27, 0x2e, 0xf2, 0x03, 0x23, 0x2e, 0xee, 0x03, 0x05, 0x2e, 0xf2,
-    0x03, 0x81, 0x90, 0x15, 0x2f, 0x05, 0x2e, 0xf1, 0x03, 0x42, 0x0e, 0x11, 0x2f, 0x23, 0x2e, 0xf2, 0x03, 0x50, 0x30,
-    0x98, 0x2e, 0x04, 0xeb, 0x01, 0x2e, 0xef, 0x03, 0x05, 0x2e, 0xbc, 0x00, 0x11, 0x24, 0xff, 0x03, 0x13, 0x24, 0x00,
-    0xfc, 0x93, 0x08, 0x01, 0x08, 0x02, 0x0a, 0x21, 0x2e, 0xbc, 0x00, 0xe0, 0x6f, 0x21, 0x2e, 0xed, 0x03, 0xfb, 0x6f,
-    0xe0, 0x5f, 0xb8, 0x2e, 0x50, 0x50, 0x0a, 0x25, 0x3b, 0x80, 0xe3, 0x7f, 0x02, 0x42, 0xc1, 0x7f, 0xf1, 0x7f, 0xdb,
-    0x7f, 0x22, 0x30, 0x03, 0x30, 0x10, 0x25, 0x98, 0x2e, 0x8e, 0xdf, 0xf1, 0x6f, 0x41, 0x16, 0x81, 0x08, 0xe3, 0x6f,
-    0x4b, 0x08, 0x0a, 0x1a, 0xdb, 0x6f, 0x11, 0x30, 0x03, 0x30, 0xc0, 0x2e, 0x19, 0x22, 0xb0, 0x5f, 0x40, 0x50, 0x0a,
-    0x25, 0x3c, 0x80, 0xfb, 0x7f, 0x01, 0x42, 0xd2, 0x7f, 0xe3, 0x7f, 0x32, 0x30, 0x03, 0x30, 0x10, 0x25, 0x98, 0x2e,
-    0x8e, 0xdf, 0xfb, 0x6f, 0xc0, 0x5f, 0xb8, 0x2e, 0x02, 0x25, 0x23, 0x25, 0x30, 0x25, 0x50, 0x50, 0x00, 0x30, 0xbb,
-    0x7f, 0x00, 0x43, 0xf4, 0x7f, 0xe2, 0x7f, 0xd3, 0x7f, 0xc1, 0x7f, 0x98, 0x2e, 0x78, 0x03, 0x01, 0xb2, 0x19, 0x2f,
-    0xc1, 0x6f, 0xf2, 0x30, 0x8a, 0x08, 0x13, 0x24, 0xf0, 0x00, 0x4b, 0x08, 0x24, 0xbd, 0x94, 0xb8, 0x4a, 0x0a, 0x81,
-    0x16, 0xd3, 0x6f, 0xe4, 0x6f, 0x93, 0x08, 0x4c, 0x08, 0x4a, 0x0a, 0x12, 0x24, 0x00, 0xff, 0x8a, 0x08, 0x13, 0x24,
-    0xff, 0x00, 0x4b, 0x08, 0x98, 0xbc, 0x28, 0xb9, 0xf3, 0x6f, 0x4a, 0x0a, 0xc1, 0x42, 0x00, 0x2e, 0xbb, 0x6f, 0xb0,
-    0x5f, 0xb8, 0x2e, 0x20, 0x50, 0xf3, 0x7f, 0xeb, 0x7f, 0xa3, 0x32, 0x01, 0x2e, 0xf3, 0x03, 0x00, 0xb2, 0x08, 0x2f,
-    0x24, 0x25, 0x07, 0x2e, 0xf4, 0x03, 0xa1, 0x32, 0xf4, 0x6f, 0x98, 0x2e, 0xa0, 0x03, 0x08, 0x2c, 0x00, 0x30, 0x98,
-    0x2e, 0x91, 0x03, 0xf1, 0x6f, 0x21, 0x2e, 0xf4, 0x03, 0x40, 0x42, 0x10, 0x30, 0xeb, 0x6f, 0xe0, 0x5f, 0x21, 0x2e,
-    0xf3, 0x03, 0xb8, 0x2e, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    0x2e, 0xcd, 0x01, 0xf2, 0x6f, 0x21, 0x2e, 0xd1, 0x01, 0x25, 0x2e, 0xd0, 0x03, 0x23, 0x2e, 0xf6, 0x01, 0xeb, 0x6f,
+    0xe0, 0x5f, 0xb8, 0x2e, 0x01, 0x2e, 0xac, 0x01, 0x01, 0xb2, 0x06, 0x2f, 0x01, 0x2e, 0x21, 0xf1, 0xb1, 0x3f, 0x01,
+    0x08, 0xc0, 0x2e, 0x21, 0x2e, 0x21, 0xf1, 0x01, 0x2e, 0x21, 0xf1, 0x41, 0x30, 0x01, 0x0a, 0xc0, 0x2e, 0x21, 0x2e,
+    0x21, 0xf1, 0xb8, 0x2e, 0x01, 0x2e, 0xf6, 0x01, 0x86, 0xbc, 0x9f, 0xb8, 0x41, 0x90, 0x06, 0x2f, 0x11, 0x24, 0xff,
+    0xfd, 0x01, 0x08, 0x21, 0x2e, 0xf6, 0x01, 0x80, 0x2e, 0x43, 0xeb, 0xb8, 0x2e, 0x10, 0x50, 0xfb, 0x7f, 0x98, 0x2e,
+    0x48, 0x02, 0xfb, 0x6f, 0xf0, 0x5f, 0x80, 0x2e, 0xeb, 0x02, 0x80, 0x2e, 0x48, 0x02, 0x01, 0x2e, 0xd1, 0x03, 0x10,
+    0x50, 0x00, 0x90, 0x0e, 0x2f, 0x01, 0x2e, 0xa0, 0xf2, 0x09, 0xbc, 0x0d, 0xb8, 0x31, 0x30, 0x08, 0x04, 0xfb, 0x7f,
+    0x21, 0x2e, 0xd5, 0x01, 0x98, 0x2e, 0x18, 0xe5, 0x10, 0x30, 0x21, 0x2e, 0xd1, 0x03, 0xfb, 0x6f, 0xf0, 0x5f, 0xb8,
+    0x2e, 0x03, 0x2e, 0x05, 0xf8, 0x9a, 0xbc, 0x10, 0x50, 0x9f, 0xb8, 0x40, 0x90, 0xfb, 0x7f, 0x05, 0x2f, 0x03, 0x2e,
+    0x05, 0xf8, 0x02, 0x32, 0x4a, 0x0a, 0x23, 0x2e, 0x05, 0xf8, 0x05, 0x2e, 0xf6, 0x01, 0xab, 0xbc, 0x9f, 0xb8, 0x41,
+    0x90, 0x22, 0x2f, 0x03, 0x2e, 0xae, 0x00, 0x9a, 0xbc, 0x9f, 0xb8, 0x41, 0x90, 0x1c, 0x2f, 0x14, 0x24, 0x16, 0xf1,
+    0xf0, 0x3e, 0x02, 0x08, 0x11, 0x41, 0x02, 0x41, 0x21, 0x2e, 0xf6, 0x01, 0x09, 0x2e, 0xad, 0x00, 0x13, 0x24, 0xac,
+    0x00, 0x98, 0x2e, 0xad, 0x03, 0x12, 0x30, 0x11, 0x24, 0xf9, 0x01, 0xc2, 0x08, 0x44, 0x40, 0x10, 0x24, 0xff, 0xdf,
+    0xbd, 0xbd, 0x04, 0x09, 0x1c, 0x0b, 0x54, 0x42, 0x00, 0x2e, 0x44, 0x40, 0x94, 0x0a, 0x42, 0x42, 0x00, 0x2e, 0xfb,
+    0x6f, 0xf0, 0x5f, 0xb8, 0x2e, 0xb8, 0x2e, 0x01, 0x2e, 0x12, 0xf1, 0x03, 0x2e, 0xbc, 0x00, 0x96, 0xbc, 0x96, 0xb8,
+    0x54, 0xb0, 0x20, 0x50, 0x2d, 0x2e, 0xd2, 0x03, 0x00, 0xa6, 0x21, 0x2e, 0xd3, 0x03, 0xfb, 0x7f, 0x01, 0x30, 0x07,
+    0x30, 0x58, 0x2f, 0x09, 0x2e, 0xd5, 0x03, 0x01, 0xb3, 0x13, 0x30, 0x05, 0x2e, 0xd2, 0x03, 0x06, 0x2f, 0x0b, 0x2e,
+    0xd7, 0x03, 0x45, 0x0e, 0x02, 0x2f, 0x42, 0x01, 0x2b, 0x2e, 0xd7, 0x03, 0x0b, 0x2e, 0xd7, 0x03, 0xc5, 0x0e, 0x11,
+    0x2f, 0x00, 0x91, 0x0f, 0x2f, 0x27, 0x2e, 0xd5, 0x03, 0x62, 0x25, 0x44, 0x31, 0x05, 0x30, 0x41, 0x8b, 0x20, 0x19,
+    0x50, 0xa1, 0xfb, 0x2f, 0xf4, 0x3f, 0x20, 0x05, 0x94, 0x04, 0x25, 0x2e, 0xd8, 0x03, 0x2d, 0x2e, 0xd6, 0x03, 0x05,
+    0x2e, 0xd5, 0x03, 0x81, 0x90, 0xe0, 0x7f, 0x07, 0x2f, 0x05, 0x2e, 0xd4, 0x03, 0xd0, 0x0e, 0x03, 0x2f, 0x23, 0x2e,
+    0xd5, 0x03, 0x27, 0x2e, 0xd9, 0x03, 0x05, 0x2e, 0xd5, 0x03, 0x81, 0x90, 0x06, 0x2f, 0x05, 0x2e, 0xbc, 0x00, 0x13,
+    0x24, 0x00, 0xfc, 0x93, 0x08, 0x25, 0x2e, 0xbc, 0x00, 0x05, 0x2e, 0xd9, 0x03, 0x81, 0x90, 0x15, 0x2f, 0x05, 0x2e,
+    0xd8, 0x03, 0x42, 0x0e, 0x11, 0x2f, 0x23, 0x2e, 0xd9, 0x03, 0x50, 0x30, 0x98, 0x2e, 0x04, 0xeb, 0x01, 0x2e, 0xd6,
+    0x03, 0x05, 0x2e, 0xbc, 0x00, 0x11, 0x24, 0xff, 0x03, 0x13, 0x24, 0x00, 0xfc, 0x93, 0x08, 0x01, 0x08, 0x02, 0x0a,
+    0x21, 0x2e, 0xbc, 0x00, 0xe0, 0x6f, 0x21, 0x2e, 0xd4, 0x03, 0xfb, 0x6f, 0xe0, 0x5f, 0xb8, 0x2e, 0x50, 0x50, 0x0a,
+    0x25, 0x3b, 0x80, 0xe3, 0x7f, 0x02, 0x42, 0xc1, 0x7f, 0xf1, 0x7f, 0xdb, 0x7f, 0x22, 0x30, 0x03, 0x30, 0x10, 0x25,
+    0x98, 0x2e, 0x8e, 0xdf, 0xf1, 0x6f, 0x41, 0x16, 0x81, 0x08, 0xe3, 0x6f, 0x4b, 0x08, 0x0a, 0x1a, 0xdb, 0x6f, 0x11,
+    0x30, 0x03, 0x30, 0xc0, 0x2e, 0x19, 0x22, 0xb0, 0x5f, 0x40, 0x50, 0x0a, 0x25, 0x3c, 0x80, 0xfb, 0x7f, 0x01, 0x42,
+    0xd2, 0x7f, 0xe3, 0x7f, 0x32, 0x30, 0x03, 0x30, 0x10, 0x25, 0x98, 0x2e, 0x8e, 0xdf, 0xfb, 0x6f, 0xc0, 0x5f, 0xb8,
+    0x2e, 0x02, 0x25, 0x23, 0x25, 0x30, 0x25, 0x50, 0x50, 0x00, 0x30, 0xbb, 0x7f, 0x00, 0x43, 0xf4, 0x7f, 0xe2, 0x7f,
+    0xd3, 0x7f, 0xc1, 0x7f, 0x98, 0x2e, 0x58, 0x03, 0x01, 0xb2, 0x19, 0x2f, 0xc1, 0x6f, 0xf2, 0x30, 0x8a, 0x08, 0x13,
+    0x24, 0xf0, 0x00, 0x4b, 0x08, 0x24, 0xbd, 0x94, 0xb8, 0x4a, 0x0a, 0x81, 0x16, 0xd3, 0x6f, 0xe4, 0x6f, 0x93, 0x08,
+    0x4c, 0x08, 0x4a, 0x0a, 0x12, 0x24, 0x00, 0xff, 0x8a, 0x08, 0x13, 0x24, 0xff, 0x00, 0x4b, 0x08, 0x98, 0xbc, 0x28,
+    0xb9, 0xf3, 0x6f, 0x4a, 0x0a, 0xc1, 0x42, 0x00, 0x2e, 0xbb, 0x6f, 0xb0, 0x5f, 0xb8, 0x2e, 0x20, 0x50, 0x01, 0x2e,
+    0xda, 0x03, 0xf3, 0x7f, 0x00, 0xb2, 0xeb, 0x7f, 0xa3, 0x32, 0x0e, 0x2f, 0x01, 0x90, 0x0a, 0x2f, 0x24, 0x25, 0x07,
+    0x2e, 0xdb, 0x03, 0xf4, 0x6f, 0xa1, 0x32, 0x98, 0x2e, 0x80, 0x03, 0x00, 0x30, 0x21, 0x2e, 0xda, 0x03, 0x0b, 0x2d,
+    0x0a, 0x2c, 0x00, 0x30, 0x98, 0x2e, 0x71, 0x03, 0xf4, 0x6f, 0x21, 0x2e, 0xdb, 0x03, 0x00, 0x43, 0x10, 0x30, 0x21,
+    0x2e, 0xda, 0x03, 0xeb, 0x6f, 0xe0, 0x5f, 0xb8, 0x2e, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 /*! Array to store config array table */
 static uint8_t bmi3_config_array_table[] = {
-    0x05, 0x02, 0x0c, 0x00, 0xa9, 0x02, 0xa7, 0x02, 0x9f, 0x02, 0x6e, 0x02, 0x00, 0x00, 0x90, 0x02, 0xbf, 0x02, 0x15,
-    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x91, 0x02
+    0x05, 0x02, 0x0c, 0x00, 0x99, 0x02, 0x97, 0x02, 0x8f, 0x02, 0x6e, 0x02, 0x00, 0x00, 0x80, 0x02, 0xaf, 0x02, 0xea,
+    0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x02
 };
 
 /*! Array to store config version */
 static uint8_t bmi3_config_version[] = {
-    0xad, 0x00, 0x01, 0x00, 0x09, 0x08
+    0xad, 0x00, 0x01, 0x00, 0x08, 0x08
 };
 
 /******************************************************************************/
@@ -1592,7 +1590,7 @@ static int8_t set_accel_foc_config(struct bmi3_dev *dev);
  * @return < 0 -> Fail
  */
 static int8_t perform_accel_foc(const struct bmi3_accel_foc_g_value *accel_g_value,
-                                const struct bmi3_accel_config *acc_cfg,
+                                struct bmi3_accel_config *acc_cfg,
                                 struct bmi3_dev *dev);
 
 /*!
@@ -1634,24 +1632,15 @@ static void comp_for_gravity(uint16_t lsb_per_g,
  *                            difference in accelerometer data and lsb_per_g
  *                            value.
  * @param[out] data         : Stores accel offset data
+ * @param[in] dev           : Structure instance of bmi3_dev.
  *
  * @return None
  * @retval None
  */
 static void scale_accel_offset(uint8_t range,
                                const struct bmi3_offset_delta *comp_data,
-                               struct bmi3_acc_usr_gain_offset *data);
-
-/*!
- * @brief This internal API finds the bit position of 3.9mg according to given
- * range and resolution.
- *
- * @param[in] range     : Gravity range of the accelerometer.
- *
- * @return Result of API execution status
- * @retval Bit position of 3.9mg
- */
-static int8_t get_bit_pos_3_9mg(uint8_t range);
+                               struct bmi3_acc_dp_gain_offset *data,
+                               const struct bmi3_dev *dev);
 
 /*!
  * @brief This internal API inverts the accelerometer offset data.
@@ -1661,7 +1650,7 @@ static int8_t get_bit_pos_3_9mg(uint8_t range);
  * @return None
  * @retval None
  */
-static void invert_accel_offset(struct bmi3_acc_usr_gain_offset *offset_data);
+static void invert_accel_offset(struct bmi3_acc_dp_gain_offset *offset_data);
 
 /*!
  * @brief This internal API is used to calculate the power of a value.
@@ -1892,6 +1881,18 @@ int8_t bmi3_init(struct bmi3_dev *dev)
         }
     }
 
+    if (rslt == BMI3_OK)
+    {
+        if (((chip_id[1] & BMI3_REV_ID_MASK) >> BMI3_REV_ID_POS) == BMI3_ENABLE)
+        {
+            dev->accel_bit_width = BMI3_ACC_DP_OFF_XYZ_14_BIT_MASK;
+        }
+        else
+        {
+            dev->accel_bit_width = BMI3_ACC_DP_OFF_XYZ_13_BIT_MASK;
+        }
+    }
+
     return rslt;
 }
 
@@ -2009,6 +2010,8 @@ int8_t bmi3_soft_reset(struct bmi3_dev *dev)
     /* Array variable to store feature IO status */
     uint8_t feature_io_status[2] = { BMI3_ENABLE, 0 };
 
+    uint8_t loop = 1;
+
     /* Null-pointer check */
     rslt = null_ptr_check(dev);
 
@@ -2045,9 +2048,27 @@ int8_t bmi3_soft_reset(struct bmi3_dev *dev)
         if (rslt == BMI3_OK)
         {
             /* Checking the status bit for feature engine enable */
-            while (!(reg_data[0] & BMI3_FEATURE_ENGINE_ENABLE_MASK))
+            while (loop <= 10)
             {
+                dev->delay_us(100000, dev->intf_ptr);
+
                 rslt = bmi3_get_regs(BMI3_REG_FEATURE_IO1, reg_data, 2, dev);
+
+                if (rslt == BMI3_OK)
+                {
+                    if (reg_data[0] & BMI3_FEATURE_ENGINE_ENABLE_MASK)
+                    {
+                        rslt = BMI3_OK;
+
+                        break;
+                    }
+                    else
+                    {
+                        rslt = BMI3_E_FEATURE_ENGINE_STATUS;
+                    }
+                }
+
+                loop++;
             }
         }
     }
@@ -2449,26 +2470,35 @@ int8_t bmi3_map_interrupt(struct bmi3_map_int map_int, struct bmi3_dev *dev)
 
     if (rslt == BMI3_OK)
     {
-        no_motion_out = BMI3_SET_BIT_POS0(reg_data[0], BMI3_NO_MOTION_OUT, map_int.no_motion_out);
-        any_motion_out = BMI3_SET_BITS(reg_data[0], BMI3_ANY_MOTION_OUT, map_int.any_motion_out);
-        flat_out = BMI3_SET_BITS(reg_data[0], BMI3_FLAT_OUT, map_int.flat_out);
-        orientation_out = BMI3_SET_BITS(reg_data[0], BMI3_ORIENTATION_OUT, map_int.orientation_out);
-        step_detector_out = BMI3_SET_BITS(reg_data[1], BMI3_STEP_DETECTOR_OUT, map_int.step_detector_out);
-        step_counter_out = BMI3_SET_BITS(reg_data[1], BMI3_STEP_COUNTER_OUT, map_int.step_counter_out);
-        sig_motion_out = BMI3_SET_BITS(reg_data[1], BMI3_SIG_MOTION_OUT, map_int.sig_motion_out);
-        tilt_out = BMI3_SET_BITS(reg_data[1], BMI3_TILT_OUT, map_int.tilt_out);
+        no_motion_out =
+            (BMI3_SET_BIT_POS0(reg_data[0], BMI3_NO_MOTION_OUT, map_int.no_motion_out) & BMI3_NO_MOTION_OUT_MASK);
+        any_motion_out =
+            (BMI3_SET_BITS(reg_data[0], BMI3_ANY_MOTION_OUT, map_int.any_motion_out) & BMI3_ANY_MOTION_OUT_MASK);
+        flat_out = (BMI3_SET_BITS(reg_data[0], BMI3_FLAT_OUT, map_int.flat_out) & BMI3_FLAT_OUT_MASK);
+        orientation_out =
+            (BMI3_SET_BITS(reg_data[0], BMI3_ORIENTATION_OUT, map_int.orientation_out) & BMI3_ORIENTATION_OUT_MASK);
+        step_detector_out =
+            (BMI3_SET_BITS(reg_data[1], BMI3_STEP_DETECTOR_OUT,
+                           map_int.step_detector_out) & BMI3_STEP_DETECTOR_OUT_MASK);
+        step_counter_out =
+            (BMI3_SET_BITS(reg_data[1], BMI3_STEP_COUNTER_OUT, map_int.step_counter_out) & BMI3_STEP_COUNTER_OUT_MASK);
+        sig_motion_out =
+            (BMI3_SET_BITS(reg_data[1], BMI3_SIG_MOTION_OUT, map_int.sig_motion_out) & BMI3_SIG_MOTION_OUT_MASK);
+        tilt_out = (BMI3_SET_BITS(reg_data[1], BMI3_TILT_OUT, map_int.tilt_out) & BMI3_TILT_OUT_MASK);
 
         reg_data[0] = (uint8_t)(no_motion_out | any_motion_out | flat_out | orientation_out);
         reg_data[1] = (uint8_t)((step_detector_out | step_counter_out | sig_motion_out | tilt_out) >> 8);
 
-        tap_out = BMI3_SET_BIT_POS0(reg_data[2], BMI3_TAP_OUT, map_int.tap_out);
-        i3c_out = BMI3_SET_BITS(reg_data[2], BMI3_I3C_OUT, map_int.i3c_out);
-        err_status = BMI3_SET_BITS(reg_data[2], BMI3_ERR_STATUS, map_int.err_status);
-        temp = BMI3_SET_BITS(reg_data[2], BMI3_TEMP_DRDY_INT, map_int.temp_drdy_int);
-        gyr = BMI3_SET_BITS(reg_data[3], BMI3_GYR_DRDY_INT, map_int.gyr_drdy_int);
-        acc = BMI3_SET_BITS(reg_data[3], BMI3_ACC_DRDY_INT, map_int.acc_drdy_int);
-        fwm = BMI3_SET_BITS(reg_data[3], BMI3_FIFO_WATERMARK_INT, map_int.fifo_watermark_int);
-        ffull = BMI3_SET_BITS(reg_data[3], BMI3_FIFO_FULL_INT, map_int.fifo_full_int);
+        tap_out = (BMI3_SET_BIT_POS0(reg_data[2], BMI3_TAP_OUT, map_int.tap_out) & BMI3_TAP_OUT_MASK);
+        i3c_out = (BMI3_SET_BITS(reg_data[2], BMI3_I3C_OUT, map_int.i3c_out) & BMI3_I3C_OUT_MASK);
+        err_status = (BMI3_SET_BITS(reg_data[2], BMI3_ERR_STATUS, map_int.err_status) & BMI3_ERR_STATUS_MASK);
+        temp = (BMI3_SET_BITS(reg_data[2], BMI3_TEMP_DRDY_INT, map_int.temp_drdy_int) & BMI3_TEMP_DRDY_INT_MASK);
+        gyr = (BMI3_SET_BITS(reg_data[3], BMI3_GYR_DRDY_INT, map_int.gyr_drdy_int) & BMI3_GYR_DRDY_INT_MASK);
+        acc = (BMI3_SET_BITS(reg_data[3], BMI3_ACC_DRDY_INT, map_int.acc_drdy_int) & BMI3_ACC_DRDY_INT_MASK);
+        fwm =
+            (BMI3_SET_BITS(reg_data[3], BMI3_FIFO_WATERMARK_INT,
+                           map_int.fifo_watermark_int) & BMI3_FIFO_WATERMARK_INT_MASK);
+        ffull = (BMI3_SET_BITS(reg_data[3], BMI3_FIFO_FULL_INT, map_int.fifo_full_int) & BMI3_FIFO_FULL_INT_MASK);
 
         reg_data[2] = (uint8_t)(tap_out | i3c_out | err_status | temp);
         reg_data[3] = (uint8_t)((gyr | acc | fwm | ffull) >> 8);
@@ -2982,6 +3012,11 @@ int8_t bmi3_extract_accel(struct bmi3_fifo_sens_axes_data *accel_data,
 
             if (rslt != BMI3_W_PARTIAL_READ)
             {
+                if (fifo->available_fifo_sens == BMI3_FIFO_HEAD_LESS_ACC_FRM)
+                {
+                    data_index = data_index + BMI3_LENGTH_FIFO_ACC;
+                }
+
                 /* If gyro enable with the accel, increment the accel index by 6
                  * since gyro frame has 6 bytes of data
                  */
@@ -3157,6 +3192,11 @@ int8_t bmi3_extract_gyro(struct bmi3_fifo_sens_axes_data *gyro_data,
 
             if (rslt != BMI3_W_PARTIAL_READ)
             {
+                if (fifo->available_fifo_sens == BMI3_FIFO_HEAD_LESS_GYR_FRM)
+                {
+                    data_index = data_index + BMI3_LENGTH_FIFO_GYR;
+                }
+
                 /* If sensor time enable with the gyro, increment the sensor time index by 2
                  * since sensor time frame has 2 bytes of data
                  */
@@ -3192,7 +3232,7 @@ int8_t bmi3_extract_gyro(struct bmi3_fifo_sens_axes_data *gyro_data,
 }
 
 /*!
- * @brief This API sets the FIFO water-mark level in the sensor.
+ * @brief This API sets the FIFO water-mark level in words.
  */
 int8_t bmi3_set_fifo_wm(uint16_t fifo_wm, struct bmi3_dev *dev)
 {
@@ -3202,20 +3242,22 @@ int8_t bmi3_set_fifo_wm(uint16_t fifo_wm, struct bmi3_dev *dev)
     /* Array to store data */
     uint8_t data[2] = { 0 };
 
+    uint16_t fifo_watermark = fifo_wm & BMI3_FIFO_WATERMARK_MASK;
+
     /* Get LSB value of FIFO water-mark */
-    data[0] = BMI3_GET_LSB(fifo_wm);
+    data[0] = BMI3_GET_LSB(fifo_watermark);
 
     /* Get MSB value of FIFO water-mark */
-    data[1] = BMI3_GET_MSB(fifo_wm);
+    data[1] = BMI3_GET_MSB(fifo_watermark);
 
     /* Set the FIFO water-mark level */
-    rslt = bmi3_set_regs(BMI3_REG_FIFO_WATERMARK, data, 2, dev);
+    rslt = bmi3_set_regs(BMI3_REG_FIFO_WATERMARK, data, BMI3_LENGTH_FIFO_WM, dev);
 
     return rslt;
 }
 
 /*!
- * @brief This API reads the FIFO water-mark level set in the sensor.
+ * @brief This API reads the FIFO water-mark level in words.
  */
 int8_t bmi3_get_fifo_wm(uint16_t *fifo_wm, struct bmi3_dev *dev)
 {
@@ -3309,7 +3351,7 @@ int8_t bmi3_get_fifo_config(uint16_t *fifo_config, struct bmi3_dev *dev)
 
 /*!
  * @brief This API gets the length of FIFO data available in the sensor in
- * bytes.
+ * words.
  */
 int8_t bmi3_get_fifo_length(uint16_t *fifo_avail_len, struct bmi3_dev *dev)
 {
@@ -3368,6 +3410,9 @@ int8_t bmi3_perform_self_test(uint8_t st_selection, struct bmi3_st_result *st_re
     /* Variable to store gyro filter coefficient base address */
     uint8_t gyro_filter_coeff_base_addr[2] = { BMI3_BASE_ADDR_GYRO_SC_ST_COEFFICIENTS, 0 };
 
+    /* Get accel configurations */
+    struct bmi3_accel_config acc_cfg = { 0 };
+
     if (st_result_status != NULL)
     {
         rslt = bmi3_set_regs(BMI3_REG_FEATURE_DATA_ADDR, gyro_filter_coeff_base_addr, 2, dev);
@@ -3414,6 +3459,12 @@ int8_t bmi3_perform_self_test(uint8_t st_selection, struct bmi3_st_result *st_re
 
         if (rslt == BMI3_OK)
         {
+            /* Get default accel configurations */
+            rslt = get_accel_config(&acc_cfg, dev);
+        }
+
+        if (rslt == BMI3_OK)
+        {
             /* Sets the self-test preconditions and triggers the self-test in the
              * command register. */
             rslt = self_test_conditions(st_selection, dev);
@@ -3421,6 +3472,12 @@ int8_t bmi3_perform_self_test(uint8_t st_selection, struct bmi3_st_result *st_re
             if (rslt == BMI3_OK)
             {
                 rslt = get_st_status_rslt(st_selection, st_result_status, dev);
+            }
+
+            if (rslt == BMI3_OK)
+            {
+                /* Restore accel configurations */
+                rslt = set_accel_config(&acc_cfg, dev);
             }
         }
     }
@@ -3537,21 +3594,29 @@ int8_t bmi3_perform_gyro_sc(uint8_t sc_selection,
     /* Variable to store result of API */
     int8_t rslt;
 
-    /* Structure to store sensor configuration */
-    struct bmi3_sens_config config;
+    /* Structure to store sensor configuration for accel */
+    struct bmi3_sens_config get_config, set_config;
 
     if (sc_rslt != NULL)
     {
-        /* Enable accelerometer */
-        config.type = BMI3_ACCEL;
+        get_config.type = BMI3_ACCEL;
 
-        /* Definition of accel configuration which are the preconditions for self-calibration */
-        config.cfg.acc.acc_mode = BMI3_ACC_MODE_HIGH_PERF;
-        config.cfg.acc.odr = BMI3_ACC_ODR_100HZ;
-        config.cfg.acc.range = BMI3_ACC_RANGE_8G;
+        /* Get accel configurations */
+        rslt = bmi3_get_sensor_config(&get_config, 1, dev);
 
-        /* Write the sensor configurations */
-        rslt = bmi3_set_sensor_config(&config, 1, dev);
+        if (rslt == BMI3_OK)
+        {
+            /* Enable accelerometer */
+            set_config.type = BMI3_ACCEL;
+
+            /* Definition of accel configuration which are the preconditions for self-calibration */
+            set_config.cfg.acc.acc_mode = BMI3_ACC_MODE_HIGH_PERF;
+            set_config.cfg.acc.odr = BMI3_ACC_ODR_100HZ;
+            set_config.cfg.acc.range = BMI3_ACC_RANGE_8G;
+
+            /* Write the sensor configurations */
+            rslt = bmi3_set_sensor_config(&set_config, 1, dev);
+        }
 
         if (rslt == BMI3_OK)
         {
@@ -3575,6 +3640,12 @@ int8_t bmi3_perform_gyro_sc(uint8_t sc_selection,
                     rslt = get_sc_gyro_rslt(sc_rslt, dev);
                 }
             }
+        }
+
+        if (rslt == BMI3_OK)
+        {
+            /* Restore accel configurations */
+            rslt = bmi3_set_sensor_config(&get_config, 1, dev);
         }
     }
     else
@@ -3667,7 +3738,7 @@ int8_t bmi3_set_i3c_tc_sync_tu(uint8_t delay_time, struct bmi3_dev *dev)
 
     if (rslt == BMI3_OK)
     {
-        /* Set the i3c sync time unit  */
+        /* Set the i3c sync time unit */
         data_array[0] = BMI3_SET_BIT_POS0(data_array[0], BMI3_I3C_TC_SYNC_TU, delay_time);
 
         rslt = bmi3_set_regs(BMI3_REG_I3C_TC_SYNC_TU, data_array, 2, dev);
@@ -3862,8 +3933,8 @@ int8_t bmi3_alternate_config_ctrl(uint8_t config_en, uint8_t alt_rst_conf, struc
 
     if (rslt == BMI3_OK)
     {
-        data[0] = config_en;
-        data[1] = alt_rst_conf;
+        data[0] = (config_en & (BMI3_ALT_ACC_ENABLE | BMI3_ALT_GYR_ENABLE));
+        data[1] = (alt_rst_conf & BMI3_ALT_CONF_RESET_ON);
 
         rslt = bmi3_set_regs(BMI3_REG_ALT_CONF, data, 2, dev);
     }
@@ -3909,6 +3980,9 @@ int8_t bmi3_get_acc_dp_off_dgain(struct bmi3_acc_dp_gain_offset *acc_dp_gain_off
 
     uint8_t reg_data[12] = { 0 };
 
+    uint16_t acc_dp_off_x, acc_dp_off_y, acc_dp_off_z;
+    uint8_t acc_dp_dgain_x, acc_dp_dgain_y, acc_dp_dgain_z;
+
     /* NULL pointer check */
     if (acc_dp_gain_offset != NULL)
     {
@@ -3917,12 +3991,19 @@ int8_t bmi3_get_acc_dp_off_dgain(struct bmi3_acc_dp_gain_offset *acc_dp_gain_off
 
         if (rslt == BMI3_OK)
         {
-            acc_dp_gain_offset->acc_dp_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
-            acc_dp_gain_offset->acc_dp_gain_x = reg_data[2];
-            acc_dp_gain_offset->acc_dp_off_y = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
-            acc_dp_gain_offset->acc_dp_gain_y = reg_data[6];
-            acc_dp_gain_offset->acc_dp_off_z = (uint16_t)(((uint16_t)reg_data[9] << 8) | reg_data[8]);
-            acc_dp_gain_offset->acc_dp_gain_z = reg_data[10];
+            acc_dp_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
+            acc_dp_dgain_x = reg_data[2];
+            acc_dp_off_y = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
+            acc_dp_dgain_y = reg_data[6];
+            acc_dp_off_z = (uint16_t)(((uint16_t)reg_data[9] << 8) | reg_data[8]);
+            acc_dp_dgain_z = reg_data[10];
+
+            acc_dp_gain_offset->acc_dp_off_x = (acc_dp_off_x & dev->accel_bit_width);
+            acc_dp_gain_offset->acc_dp_dgain_x = (acc_dp_dgain_x & BMI3_ACC_DP_DGAIN_X_MASK);
+            acc_dp_gain_offset->acc_dp_off_y = (acc_dp_off_y & dev->accel_bit_width);
+            acc_dp_gain_offset->acc_dp_dgain_y = (acc_dp_dgain_y & BMI3_ACC_DP_DGAIN_Y_MASK);
+            acc_dp_gain_offset->acc_dp_off_z = (acc_dp_off_z & dev->accel_bit_width);
+            acc_dp_gain_offset->acc_dp_dgain_z = (acc_dp_dgain_z & BMI3_ACC_DP_DGAIN_Z_MASK);
         }
     }
     else
@@ -3943,6 +4024,9 @@ int8_t bmi3_get_gyro_dp_off_dgain(struct bmi3_gyr_dp_gain_offset *gyr_dp_gain_of
 
     uint8_t reg_data[12];
 
+    uint16_t gyr_dp_off_x, gyr_dp_off_y, gyr_dp_off_z;
+    uint8_t gyr_dp_dgain_x, gyr_dp_dgain_y, gyr_dp_dgain_z;
+
     /* NULL pointer check */
     if (gyr_dp_gain_offset != NULL)
     {
@@ -3951,12 +4035,19 @@ int8_t bmi3_get_gyro_dp_off_dgain(struct bmi3_gyr_dp_gain_offset *gyr_dp_gain_of
 
         if (rslt == BMI3_OK)
         {
-            gyr_dp_gain_offset->gyr_dp_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
-            gyr_dp_gain_offset->gyr_dp_gain_x = reg_data[2];
-            gyr_dp_gain_offset->gyr_dp_off_y = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
-            gyr_dp_gain_offset->gyr_dp_gain_y = reg_data[6];
-            gyr_dp_gain_offset->gyr_dp_off_z = (uint16_t)(((uint16_t)reg_data[9] << 8) | reg_data[8]);
-            gyr_dp_gain_offset->gyr_dp_gain_z = reg_data[10];
+            gyr_dp_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
+            gyr_dp_dgain_x = reg_data[2];
+            gyr_dp_off_y = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
+            gyr_dp_dgain_y = reg_data[6];
+            gyr_dp_off_z = (uint16_t)(((uint16_t)reg_data[9] << 8) | reg_data[8]);
+            gyr_dp_dgain_z = reg_data[10];
+
+            gyr_dp_gain_offset->gyr_dp_off_x = BMI3_GET_BIT_POS0(gyr_dp_off_x, BMI3_GYR_DP_OFF_X);
+            gyr_dp_gain_offset->gyr_dp_dgain_x = BMI3_GET_BIT_POS0(gyr_dp_dgain_x, BMI3_GYR_DP_DGAIN_X);
+            gyr_dp_gain_offset->gyr_dp_off_y = BMI3_GET_BIT_POS0(gyr_dp_off_y, BMI3_GYR_DP_OFF_Y);
+            gyr_dp_gain_offset->gyr_dp_dgain_y = BMI3_GET_BIT_POS0(gyr_dp_dgain_y, BMI3_GYR_DP_DGAIN_Y);
+            gyr_dp_gain_offset->gyr_dp_off_z = BMI3_GET_BIT_POS0(gyr_dp_off_z, BMI3_GYR_DP_OFF_Z);
+            gyr_dp_gain_offset->gyr_dp_dgain_z = BMI3_GET_BIT_POS0(gyr_dp_dgain_z, BMI3_GYR_DP_DGAIN_Z);
         }
     }
     else
@@ -3979,49 +4070,34 @@ int8_t bmi3_set_acc_dp_off_dgain(const struct bmi3_acc_dp_gain_offset *acc_dp_ga
 
     uint16_t acc_dp_off_x1, acc_dp_off_y1, acc_dp_off_z1;
 
-    uint16_t acc_dp_off_x2, acc_dp_off_y2, acc_dp_off_z2;
-
-    uint16_t acc_dp_off_x, acc_dp_off_y, acc_dp_off_z;
-
-    uint8_t reg_data[12] = { 0 };
-
     uint8_t acc_off_gain[12] = { 0 };
 
+    /* Null-pointer check */
+    rslt = null_ptr_check(dev);
+
     /* NULL pointer check */
-    if (acc_dp_gain_offset != NULL)
+    if ((rslt == BMI3_OK) && (acc_dp_gain_offset != NULL))
     {
-        acc_dp_off_x1 = BMI3_SET_BIT_POS0(reg_data[0], BMI3_ACC_DP_OFF_X, acc_dp_gain_offset->acc_dp_off_x);
+        acc_dp_off_x1 = (acc_dp_gain_offset->acc_dp_off_x & dev->accel_bit_width);
 
-        acc_dp_off_x = ((uint16_t)reg_data[1] << 8);
+        acc_dp_gain_x = (uint8_t)(acc_dp_gain_offset->acc_dp_dgain_x & BMI3_ACC_DP_DGAIN_X_MASK);
 
-        acc_dp_off_x2 = BMI3_SET_BIT_POS0(acc_dp_off_x, BMI3_ACC_DP_OFF_X, acc_dp_gain_offset->acc_dp_off_x);
+        acc_dp_off_y1 = (acc_dp_gain_offset->acc_dp_off_y & dev->accel_bit_width);
 
-        acc_dp_gain_x = BMI3_SET_BIT_POS0(reg_data[2], BMI3_ACC_DP_DGAIN_X, acc_dp_gain_offset->acc_dp_gain_x);
+        acc_dp_gain_y = (uint8_t)(acc_dp_gain_offset->acc_dp_dgain_y & BMI3_ACC_DP_DGAIN_Y_MASK);
 
-        acc_dp_off_y1 = BMI3_SET_BIT_POS0(reg_data[4], BMI3_ACC_DP_OFF_Y, acc_dp_gain_offset->acc_dp_off_y);
+        acc_dp_off_z1 = (acc_dp_gain_offset->acc_dp_off_z & dev->accel_bit_width);
 
-        acc_dp_off_y = ((uint16_t)reg_data[5] << 8);
+        acc_dp_gain_z = (uint8_t)(acc_dp_gain_offset->acc_dp_dgain_z & BMI3_ACC_DP_DGAIN_Z_MASK);
 
-        acc_dp_off_y2 = BMI3_SET_BIT_POS0(acc_dp_off_y, BMI3_ACC_DP_OFF_Y, acc_dp_gain_offset->acc_dp_off_y);
-
-        acc_dp_gain_y = BMI3_SET_BIT_POS0(reg_data[6], BMI3_ACC_DP_DGAIN_Y, acc_dp_gain_offset->acc_dp_gain_y);
-
-        acc_dp_off_z1 = BMI3_SET_BIT_POS0(reg_data[8], BMI3_ACC_DP_OFF_Z, acc_dp_gain_offset->acc_dp_off_z);
-
-        acc_dp_off_z = ((uint16_t)reg_data[9] << 8);
-
-        acc_dp_off_z2 = BMI3_SET_BIT_POS0(acc_dp_off_z, BMI3_ACC_DP_OFF_Z, acc_dp_gain_offset->acc_dp_off_z);
-
-        acc_dp_gain_z = BMI3_SET_BIT_POS0(reg_data[10], BMI3_ACC_DP_DGAIN_Z, acc_dp_gain_offset->acc_dp_gain_z);
-
-        acc_off_gain[0] = (uint8_t)acc_dp_off_x1;
-        acc_off_gain[1] = acc_dp_off_x2 >> 8;
+        acc_off_gain[0] = (uint8_t)(acc_dp_off_x1 & BMI3_SET_LOW_BYTE);
+        acc_off_gain[1] = (acc_dp_off_x1 & BMI3_SET_HIGH_BYTE) >> 8;
         acc_off_gain[2] = acc_dp_gain_x;
-        acc_off_gain[4] = (uint8_t)acc_dp_off_y1;
-        acc_off_gain[5] = acc_dp_off_y2 >> 8;
+        acc_off_gain[4] = (uint8_t)(acc_dp_off_y1 & BMI3_SET_LOW_BYTE);
+        acc_off_gain[5] = (acc_dp_off_y1 & BMI3_SET_HIGH_BYTE) >> 8;
         acc_off_gain[6] = acc_dp_gain_y;
-        acc_off_gain[8] = (uint8_t)acc_dp_off_z1;
-        acc_off_gain[9] = acc_dp_off_z2 >> 8;
+        acc_off_gain[8] = (uint8_t)(acc_dp_off_z1 & BMI3_SET_LOW_BYTE);
+        acc_off_gain[9] = (acc_dp_off_z1 & BMI3_SET_HIGH_BYTE) >> 8;
         acc_off_gain[10] = acc_dp_gain_z;
 
         /* Set dp offset for accel */
@@ -4047,11 +4123,7 @@ int8_t bmi3_set_gyro_dp_off_dgain(const struct bmi3_gyr_dp_gain_offset *gyr_dp_g
 
     uint16_t gyr_dp_off_x1, gyr_dp_off_y1, gyr_dp_off_z1;
 
-    uint16_t gyr_dp_off_x2, gyr_dp_off_y2, gyr_dp_off_z2;
-
-    uint16_t gyr_dp_off_x, gyr_dp_off_y, gyr_dp_off_z;
-
-    uint8_t reg_data[12] = { 0 };
+    uint16_t reg_data[6] = { 0 };
 
     uint8_t gyr_off_gain[12] = { 0 };
 
@@ -4060,36 +4132,27 @@ int8_t bmi3_set_gyro_dp_off_dgain(const struct bmi3_gyr_dp_gain_offset *gyr_dp_g
     {
         gyr_dp_off_x1 = BMI3_SET_BIT_POS0(reg_data[0], BMI3_GYR_DP_OFF_X, gyr_dp_gain_offset->gyr_dp_off_x);
 
-        gyr_dp_off_x = ((uint16_t)reg_data[1] << 8);
+        gyr_dp_gain_x =
+            (uint8_t)BMI3_SET_BIT_POS0(reg_data[1], BMI3_GYR_DP_DGAIN_X, gyr_dp_gain_offset->gyr_dp_dgain_x);
 
-        gyr_dp_off_x2 = BMI3_SET_BIT_POS0(gyr_dp_off_x, BMI3_GYR_DP_OFF_X, gyr_dp_gain_offset->gyr_dp_off_x);
+        gyr_dp_off_y1 = BMI3_SET_BIT_POS0(reg_data[2], BMI3_GYR_DP_OFF_Y, gyr_dp_gain_offset->gyr_dp_off_y);
 
-        gyr_dp_gain_x = BMI3_SET_BIT_POS0(reg_data[2], BMI3_GYR_DP_DGAIN_X, gyr_dp_gain_offset->gyr_dp_gain_x);
+        gyr_dp_gain_y =
+            (uint8_t)BMI3_SET_BIT_POS0(reg_data[3], BMI3_GYR_DP_DGAIN_Y, gyr_dp_gain_offset->gyr_dp_dgain_y);
 
-        gyr_dp_off_y1 = BMI3_SET_BIT_POS0(reg_data[4], BMI3_GYR_DP_OFF_Y, gyr_dp_gain_offset->gyr_dp_off_y);
+        gyr_dp_off_z1 = BMI3_SET_BIT_POS0(reg_data[4], BMI3_GYR_DP_OFF_Z, gyr_dp_gain_offset->gyr_dp_off_z);
 
-        gyr_dp_off_y = ((uint16_t)reg_data[5] << 8);
+        gyr_dp_gain_z =
+            (uint8_t)BMI3_SET_BIT_POS0(reg_data[5], BMI3_GYR_DP_DGAIN_Z, gyr_dp_gain_offset->gyr_dp_dgain_z);
 
-        gyr_dp_off_y2 = BMI3_SET_BIT_POS0(gyr_dp_off_y, BMI3_GYR_DP_OFF_Y, gyr_dp_gain_offset->gyr_dp_off_y);
-
-        gyr_dp_gain_y = BMI3_SET_BIT_POS0(reg_data[6], BMI3_GYR_DP_DGAIN_Y, gyr_dp_gain_offset->gyr_dp_gain_y);
-
-        gyr_dp_off_z1 = BMI3_SET_BIT_POS0(reg_data[8], BMI3_GYR_DP_OFF_Z, gyr_dp_gain_offset->gyr_dp_off_z);
-
-        gyr_dp_off_z = ((uint16_t)reg_data[9] << 8);
-
-        gyr_dp_off_z2 = BMI3_SET_BIT_POS0(gyr_dp_off_z, BMI3_GYR_DP_OFF_Z, gyr_dp_gain_offset->gyr_dp_off_z);
-
-        gyr_dp_gain_z = BMI3_SET_BIT_POS0(reg_data[10], BMI3_GYR_DP_DGAIN_Z, gyr_dp_gain_offset->gyr_dp_gain_z);
-
-        gyr_off_gain[0] = (uint8_t)gyr_dp_off_x1;
-        gyr_off_gain[1] = gyr_dp_off_x2 >> 8;
+        gyr_off_gain[0] = (uint8_t)(gyr_dp_off_x1 & BMI3_SET_LOW_BYTE);
+        gyr_off_gain[1] = (gyr_dp_off_x1 & BMI3_SET_HIGH_BYTE) >> 8;
         gyr_off_gain[2] = gyr_dp_gain_x;
-        gyr_off_gain[4] = (uint8_t)gyr_dp_off_y1;
-        gyr_off_gain[5] = gyr_dp_off_y2 >> 8;
+        gyr_off_gain[4] = (uint8_t)(gyr_dp_off_y1 & BMI3_SET_LOW_BYTE);
+        gyr_off_gain[5] = (gyr_dp_off_y1 & BMI3_SET_HIGH_BYTE) >> 8;
         gyr_off_gain[6] = gyr_dp_gain_y;
-        gyr_off_gain[8] = (uint8_t)gyr_dp_off_z1;
-        gyr_off_gain[9] = gyr_dp_off_z2 >> 8;
+        gyr_off_gain[8] = (uint8_t)(gyr_dp_off_z1 & BMI3_SET_LOW_BYTE);
+        gyr_off_gain[9] = (gyr_dp_off_z1 & BMI3_SET_HIGH_BYTE) >> 8;
         gyr_off_gain[10] = gyr_dp_gain_z;
 
         /* Set dp offset for gyro */
@@ -4128,54 +4191,15 @@ int8_t bmi3_get_user_acc_off_dgain(struct bmi3_acc_usr_gain_offset *acc_usr_gain
 
             if (rslt == BMI3_OK)
             {
-                acc_usr_gain_offset->acc_usr_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
-                acc_usr_gain_offset->acc_usr_off_y = (uint16_t)(((uint16_t)reg_data[3] << 8) | reg_data[2]);
-                acc_usr_gain_offset->acc_usr_off_z = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
-                acc_usr_gain_offset->acc_usr_gain_x = reg_data[6];
-                acc_usr_gain_offset->acc_usr_gain_y = reg_data[8];
-                acc_usr_gain_offset->acc_usr_gain_z = reg_data[10];
-            }
-        }
-    }
-    else
-    {
-        rslt = BMI3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API gets user offset dgain for the sensor which stores self-calibrated values for gyro.
- */
-int8_t bmi3_get_user_gyro_off_dgain(struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev)
-{
-    /* Variable to store result of API */
-    int8_t rslt;
-
-    uint8_t reg_data[12];
-
-    uint8_t base_addr[2] = { BMI3_BASE_ADDR_GYRO_OFFSET_GAIN, 0 };
-
-    /* NULL pointer check */
-    if (gyr_usr_gain_offset != NULL)
-    {
-        /* Set the user gyro offset base address to feature engine transmission address to start DMA transaction */
-        rslt = bmi3_set_regs(BMI3_REG_FEATURE_DATA_ADDR, base_addr, 2, dev);
-
-        if (rslt == BMI3_OK)
-        {
-            /* Get the configuration from the feature engine register */
-            rslt = bmi3_get_regs(BMI3_REG_FEATURE_DATA_TX, reg_data, 12, dev);
-
-            if (rslt == BMI3_OK)
-            {
-                gyr_usr_gain_offset->gyr_usr_off_x = (uint16_t)(((uint16_t)reg_data[1] << 8) | reg_data[0]);
-                gyr_usr_gain_offset->gyr_usr_off_y = (uint16_t)(((uint16_t)reg_data[3] << 8) | reg_data[2]);
-                gyr_usr_gain_offset->gyr_usr_off_z = (uint16_t)(((uint16_t)reg_data[5] << 8) | reg_data[4]);
-                gyr_usr_gain_offset->gyr_usr_gain_x = reg_data[6];
-                gyr_usr_gain_offset->gyr_usr_gain_y = reg_data[8];
-                gyr_usr_gain_offset->gyr_usr_gain_z = reg_data[10];
+                acc_usr_gain_offset->acc_usr_off_x =
+                    (uint16_t)((((uint16_t)reg_data[1] << 8) | reg_data[0]) & BMI3_ACC_USR_OFF_X_MASK);
+                acc_usr_gain_offset->acc_usr_off_y =
+                    (uint16_t)((((uint16_t)reg_data[3] << 8) | reg_data[2]) & BMI3_ACC_USR_OFF_Y_MASK);
+                acc_usr_gain_offset->acc_usr_off_z =
+                    (uint16_t)((((uint16_t)reg_data[5] << 8) | reg_data[4]) & BMI3_ACC_USR_OFF_Z_MASK);
+                acc_usr_gain_offset->acc_usr_gain_x = (uint8_t)(reg_data[6] & BMI3_ACC_USR_GAIN_X_MASK);
+                acc_usr_gain_offset->acc_usr_gain_y = (uint8_t)(reg_data[8] & BMI3_ACC_USR_GAIN_Y_MASK);
+                acc_usr_gain_offset->acc_usr_gain_z = (uint8_t)(reg_data[10] & BMI3_ACC_USR_GAIN_Z_MASK);
             }
         }
     }
@@ -4253,87 +4277,6 @@ int8_t bmi3_set_user_acc_off_dgain(const struct bmi3_acc_usr_gain_offset *acc_us
 
             /* Set the configuration to the feature engine register */
             rslt = bmi3_set_regs(BMI3_REG_FEATURE_DATA_TX, user_acc_off_gain, 12, dev);
-        }
-    }
-    else
-    {
-        rslt = BMI3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API sets user offset dgain for the sensor which stores self-calibrated values for gyro.
- */
-int8_t bmi3_set_user_gyr_off_dgain(const struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev)
-{
-    /* Variable to store result of API */
-    int8_t rslt;
-
-    uint8_t gyr_usr_gain_x, gyr_usr_gain_y, gyr_usr_gain_z;
-
-    uint16_t gyr_usr_off_x1, gyr_usr_off_y1, gyr_usr_off_z1;
-
-    uint16_t gyr_usr_off_x2, gyr_usr_off_y2, gyr_usr_off_z2;
-
-    uint16_t gyr_usr_off_x, gyr_usr_off_y, gyr_usr_off_z;
-
-    uint8_t reg_data[12] = { 0 };
-
-    uint8_t user_gyr_off_gain[12];
-
-    uint8_t base_addr[2] = { BMI3_BASE_ADDR_GYRO_OFFSET_GAIN, 0 };
-
-    /* NULL pointer check */
-    if (gyr_usr_gain_offset != NULL)
-    {
-        /* Set the user gyro offset base address to feature engine transmission address to start DMA transaction */
-        rslt = bmi3_set_regs(BMI3_REG_FEATURE_DATA_ADDR, base_addr, 2, dev);
-
-        if (rslt == BMI3_OK)
-        {
-            gyr_usr_off_x1 = BMI3_SET_BIT_POS0(reg_data[0], BMI3_GYR_USR_OFF_X, gyr_usr_gain_offset->gyr_usr_off_x);
-
-            gyr_usr_off_x = ((uint16_t)reg_data[1] << 8);
-
-            gyr_usr_off_x2 = BMI3_SET_BIT_POS0(gyr_usr_off_x, BMI3_GYR_USR_OFF_X, gyr_usr_gain_offset->gyr_usr_off_x);
-
-            gyr_usr_off_y1 = BMI3_SET_BIT_POS0(reg_data[2], BMI3_GYR_USR_OFF_Y, gyr_usr_gain_offset->gyr_usr_off_y);
-
-            gyr_usr_off_y = ((uint16_t)reg_data[3] << 8);
-
-            gyr_usr_off_y2 = BMI3_SET_BIT_POS0(gyr_usr_off_y, BMI3_GYR_USR_OFF_Y, gyr_usr_gain_offset->gyr_usr_off_y);
-
-            gyr_usr_off_z1 = BMI3_SET_BIT_POS0(reg_data[4], BMI3_GYR_USR_OFF_Z, gyr_usr_gain_offset->gyr_usr_off_z);
-
-            gyr_usr_off_z = ((uint16_t)reg_data[5] << 8);
-
-            gyr_usr_off_z2 = BMI3_SET_BIT_POS0(gyr_usr_off_z, BMI3_GYR_USR_OFF_Z, gyr_usr_gain_offset->gyr_usr_off_z);
-
-            gyr_usr_gain_x = BMI3_SET_BIT_POS0(reg_data[6], BMI3_GYR_USR_GAIN_X, gyr_usr_gain_offset->gyr_usr_gain_x);
-
-            gyr_usr_gain_y = BMI3_SET_BIT_POS0(reg_data[8], BMI3_GYR_USR_GAIN_Y, gyr_usr_gain_offset->gyr_usr_gain_y);
-
-            gyr_usr_gain_z = BMI3_SET_BIT_POS0(reg_data[10], BMI3_GYR_USR_GAIN_Z, gyr_usr_gain_offset->gyr_usr_gain_z);
-
-            user_gyr_off_gain[0] = (uint8_t)gyr_usr_off_x1;
-            user_gyr_off_gain[1] = gyr_usr_off_x2 >> 8;
-            user_gyr_off_gain[2] = (uint8_t)gyr_usr_off_y1;
-            user_gyr_off_gain[3] = gyr_usr_off_y2 >> 8;
-            user_gyr_off_gain[4] = (uint8_t)gyr_usr_off_z1;
-            user_gyr_off_gain[5] = gyr_usr_off_z2 >> 8;
-            user_gyr_off_gain[6] = gyr_usr_gain_x;
-            user_gyr_off_gain[8] = gyr_usr_gain_y;
-            user_gyr_off_gain[10] = gyr_usr_gain_z;
-
-            /* Set the configuration to the feature engine register */
-            rslt = bmi3_set_regs(BMI3_REG_FEATURE_DATA_TX, user_gyr_off_gain, 12, dev);
-
-            if (rslt == BMI3_OK)
-            {
-                rslt = bmi3_set_command_register(BMI3_CMD_USR_GAIN_OFFS_UPDATE, dev);
-            }
         }
     }
     else
@@ -4595,6 +4538,14 @@ static int8_t set_accel_config(struct bmi3_accel_config *config, struct bmi3_dev
             if (config->acc_mode == BMI3_ACC_MODE_LOW_PWR)
             {
                 rslt = validate_acc_odr_avg(config->odr, config->avg_num);
+            }
+
+            if ((config->acc_mode == BMI3_ACC_MODE_NORMAL) || (config->acc_mode == BMI3_ACC_MODE_HIGH_PERF))
+            {
+                if ((config->odr >= BMI3_ACC_ODR_0_78HZ) && (config->odr <= BMI3_ACC_ODR_6_25HZ))
+                {
+                    rslt = BMI3_E_ACC_INVALID_CFG;
+                }
             }
         }
 
@@ -5241,7 +5192,7 @@ static int8_t set_feature_enable(const struct bmi3_feature_enable *enable, struc
     int8_t rslt;
 
     uint8_t feature[2] = { 0 };
-    uint16_t reg_data;
+    uint8_t get_feature[2];
 
     uint16_t no_motion_x_en;
     uint16_t no_motion_y_en;
@@ -5268,30 +5219,50 @@ static int8_t set_feature_enable(const struct bmi3_feature_enable *enable, struc
 
     if (enable != NULL)
     {
-        rslt = bmi3_get_regs(BMI3_REG_FEATURE_IO0, feature, 2, dev);
+        rslt = bmi3_get_regs(BMI3_REG_FEATURE_IO0, get_feature, 2, dev);
 
         if (rslt == BMI3_OK)
         {
-            reg_data = feature[0];
-            no_motion_x_en = BMI3_SET_BIT_POS0(reg_data, BMI3_NO_MOTION_X_EN, enable->no_motion_x_en);
-            no_motion_y_en = BMI3_SET_BITS(reg_data, BMI3_NO_MOTION_Y_EN, enable->no_motion_y_en);
-            no_motion_z_en = BMI3_SET_BITS(reg_data, BMI3_NO_MOTION_Z_EN, enable->no_motion_z_en);
-            any_motion_x_en = BMI3_SET_BITS(reg_data, BMI3_ANY_MOTION_X_EN, enable->any_motion_x_en);
-            any_motion_y_en = BMI3_SET_BITS(reg_data, BMI3_ANY_MOTION_Y_EN, enable->any_motion_y_en);
-            any_motion_z_en = BMI3_SET_BITS(reg_data, BMI3_ANY_MOTION_Z_EN, enable->any_motion_z_en);
-            flat_en = BMI3_SET_BITS(reg_data, BMI3_FLAT_EN, enable->flat_en);
-            orientation_en = BMI3_SET_BITS(reg_data, BMI3_ORIENTATION_EN, enable->orientation_en);
+            no_motion_x_en =
+                (BMI3_SET_BIT_POS0(get_feature[0], BMI3_NO_MOTION_X_EN,
+                                   enable->no_motion_x_en) & BMI3_NO_MOTION_X_EN_MASK);
+            no_motion_y_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_NO_MOTION_Y_EN, enable->no_motion_y_en) & BMI3_NO_MOTION_Y_EN_MASK);
+            no_motion_z_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_NO_MOTION_Z_EN, enable->no_motion_z_en) & BMI3_NO_MOTION_Z_EN_MASK);
+            any_motion_x_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_ANY_MOTION_X_EN,
+                               enable->any_motion_x_en) & BMI3_ANY_MOTION_X_EN_MASK);
+            any_motion_y_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_ANY_MOTION_Y_EN,
+                               enable->any_motion_y_en) & BMI3_ANY_MOTION_Y_EN_MASK);
+            any_motion_z_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_ANY_MOTION_Z_EN,
+                               enable->any_motion_z_en) & BMI3_ANY_MOTION_Z_EN_MASK);
+            flat_en = (BMI3_SET_BITS(get_feature[0], BMI3_FLAT_EN, enable->flat_en) & BMI3_FLAT_EN_MASK);
+            orientation_en =
+                (BMI3_SET_BITS(get_feature[0], BMI3_ORIENTATION_EN, enable->orientation_en) & BMI3_ORIENTATION_EN_MASK);
 
-            reg_data = ((uint16_t)feature[1] << 8);
-
-            step_detector_en = BMI3_SET_BITS(reg_data, BMI3_STEP_DETECTOR_EN, enable->step_detector_en);
-            step_counter_en = BMI3_SET_BITS(reg_data, BMI3_STEP_COUNTER_EN, enable->step_counter_en);
-            sig_motion_en = BMI3_SET_BITS(reg_data, BMI3_SIG_MOTION_EN, enable->sig_motion_en);
-            tilt_en = BMI3_SET_BITS(reg_data, BMI3_TILT_EN, enable->tilt_en);
-            tap_detector_s_tap_en = BMI3_SET_BITS(reg_data, BMI3_TAP_DETECTOR_S_TAP_EN, enable->tap_detector_s_tap_en);
-            tap_detector_d_tap_en = BMI3_SET_BITS(reg_data, BMI3_TAP_DETECTOR_D_TAP_EN, enable->tap_detector_d_tap_en);
-            tap_detector_t_tap_en = BMI3_SET_BITS(reg_data, BMI3_TAP_DETECTOR_T_TAP_EN, enable->tap_detector_t_tap_en);
-            i3c_sync_en = BMI3_SET_BITS(reg_data, BMI3_I3C_SYNC_EN, enable->i3c_sync_en);
+            step_detector_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_STEP_DETECTOR_EN,
+                               enable->step_detector_en) & BMI3_STEP_DETECTOR_EN_MASK);
+            step_counter_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_STEP_COUNTER_EN,
+                               enable->step_counter_en) & BMI3_STEP_COUNTER_EN_MASK);
+            sig_motion_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_SIG_MOTION_EN, enable->sig_motion_en) & BMI3_SIG_MOTION_EN_MASK);
+            tilt_en = (BMI3_SET_BITS(get_feature[1], BMI3_TILT_EN, enable->tilt_en) & BMI3_TILT_EN_MASK);
+            tap_detector_s_tap_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_TAP_DETECTOR_S_TAP_EN,
+                               enable->tap_detector_s_tap_en) & BMI3_TAP_DETECTOR_S_TAP_EN_MASK);
+            tap_detector_d_tap_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_TAP_DETECTOR_D_TAP_EN,
+                               enable->tap_detector_d_tap_en) & BMI3_TAP_DETECTOR_D_TAP_EN_MASK);
+            tap_detector_t_tap_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_TAP_DETECTOR_T_TAP_EN,
+                               enable->tap_detector_t_tap_en) & BMI3_TAP_DETECTOR_T_TAP_EN_MASK);
+            i3c_sync_en =
+                (BMI3_SET_BITS(get_feature[1], BMI3_I3C_SYNC_EN, enable->i3c_sync_en) & BMI3_I3C_SYNC_EN_MASK);
 
             feature[0] =
                 (uint8_t)(no_motion_x_en | no_motion_y_en | no_motion_z_en | any_motion_x_en | any_motion_y_en |
@@ -7274,27 +7245,32 @@ static int8_t unpack_gyro_data(struct bmi3_fifo_sens_axes_data *gyro,
 static int8_t st_precondition(uint8_t st_select, struct bmi3_dev *dev)
 {
     /* Variable to store result of API */
-    int8_t rslt = BMI3_OK;
+    int8_t rslt;
 
     /* Structure instance of sensor config */
-    struct bmi3_sens_config config;
+    struct bmi3_sens_config config = { 0 };
 
     config.type = BMI3_ACCEL;
 
-    switch (st_select)
+    rslt = bmi3_get_sensor_config(&config, 1, dev);
+
+    if (rslt == BMI3_OK)
     {
-        case BMI3_ST_ACCEL_ONLY:
-            rslt = BMI3_OK;
-            break;
-        case BMI3_ST_GYRO_ONLY:
-        case BMI3_ST_BOTH_ACC_GYR:
-            rslt = BMI3_OK;
-            config.cfg.acc.acc_mode = BMI3_ACC_MODE_HIGH_PERF;
-            config.cfg.acc.odr = BMI3_ACC_ODR_100HZ;
-            break;
-        default:
-            rslt = BMI3_E_INVALID_ST_SELECTION;
-            break;
+        switch (st_select)
+        {
+            case BMI3_ST_ACCEL_ONLY:
+                rslt = BMI3_OK;
+                break;
+            case BMI3_ST_GYRO_ONLY:
+            case BMI3_ST_BOTH_ACC_GYR:
+                rslt = BMI3_OK;
+                config.cfg.acc.acc_mode = BMI3_ACC_MODE_HIGH_PERF;
+                config.cfg.acc.odr = BMI3_ACC_ODR_100HZ;
+                break;
+            default:
+                rslt = BMI3_E_INVALID_ST_SELECTION;
+                break;
+        }
     }
 
     if (rslt == BMI3_OK)
@@ -8252,26 +8228,26 @@ static int8_t validate_foc_accel_axis(int16_t avg_foc_data, struct bmi3_dev *dev
         range = sens_cfg.cfg.acc.range;
 
         /* Reference LSB value of 2G */
-        if ((range == BMI3_ACC_RANGE_2G) && (avg_foc_data > BMI3_MIN_NOISE_LIMIT(BMI3_ACC_FOC_2G_REF)) &&
-            (avg_foc_data < BMI3_MAX_NOISE_LIMIT(BMI3_ACC_FOC_2G_REF)))
+        if ((range == BMI3_ACC_RANGE_2G) && (avg_foc_data > BMI3_ACC_2G_MIN_NOISE_LIMIT) &&
+            (avg_foc_data < BMI3_ACC_2G_MAX_NOISE_LIMIT))
         {
             rslt = BMI3_OK;
         }
         /* Reference LSB value of 4G */
-        else if ((range == BMI3_ACC_RANGE_4G) && (avg_foc_data > BMI3_MIN_NOISE_LIMIT(BMI3_ACC_FOC_4G_REF)) &&
-                 (avg_foc_data < BMI3_MAX_NOISE_LIMIT(BMI3_ACC_FOC_4G_REF)))
+        else if ((range == BMI3_ACC_RANGE_4G) && (avg_foc_data > BMI3_ACC_4G_MIN_NOISE_LIMIT) &&
+                 (avg_foc_data < BMI3_ACC_4G_MAX_NOISE_LIMIT))
         {
             rslt = BMI3_OK;
         }
         /* Reference LSB value of 8G */
-        else if ((range == BMI3_ACC_RANGE_8G) && (avg_foc_data > BMI3_MIN_NOISE_LIMIT(BMI3_ACC_FOC_8G_REF)) &&
-                 (avg_foc_data < BMI3_MAX_NOISE_LIMIT(BMI3_ACC_FOC_8G_REF)))
+        else if ((range == BMI3_ACC_RANGE_8G) && (avg_foc_data > BMI3_ACC_8G_MIN_NOISE_LIMIT) &&
+                 (avg_foc_data < BMI3_ACC_8G_MAX_NOISE_LIMIT))
         {
             rslt = BMI3_OK;
         }
         /* Reference LSB value of 16G */
-        else if ((range == BMI3_ACC_RANGE_16G) && (avg_foc_data > BMI3_MIN_NOISE_LIMIT(BMI3_ACC_FOC_16G_REF)) &&
-                 (avg_foc_data < BMI3_MAX_NOISE_LIMIT(BMI3_ACC_FOC_16G_REF)))
+        else if ((range == BMI3_ACC_RANGE_16G) && (avg_foc_data > BMI3_ACC_16G_MIN_NOISE_LIMIT) &&
+                 (avg_foc_data < BMI3_ACC_16G_MAX_NOISE_LIMIT))
         {
             rslt = BMI3_OK;
         }
@@ -8305,7 +8281,7 @@ static int8_t set_accel_foc_config(struct bmi3_dev *dev)
  * @brief This internal API performs Fast Offset Compensation for accelerometer.
  */
 static int8_t perform_accel_foc(const struct bmi3_accel_foc_g_value *accel_g_value,
-                                const struct bmi3_accel_config *acc_cfg,
+                                struct bmi3_accel_config *acc_cfg,
                                 struct bmi3_dev *dev)
 {
     /* Variable to store result of API */
@@ -8336,28 +8312,16 @@ static int8_t perform_accel_foc(const struct bmi3_accel_foc_g_value *accel_g_val
     struct bmi3_offset_delta delta = { 0, 0, 0 };
 
     /* Structure to store accelerometer offset values */
-    struct bmi3_acc_usr_gain_offset offset = { 0 };
+    struct bmi3_acc_dp_gain_offset offset = { 0 };
 
     /* Variable tries max 5 times for interrupt then generates timeout */
     uint8_t try_cnt;
-
-    /* Disable accel */
-    uint8_t acc_conf_data[2] = { 0 };
-
-    /* Variable to store time out value */
-    uint8_t time_out = 20;
-
-    /* Delay to read feature engine error status */
-    uint16_t accel_foc_delay = 5000;
-
-    /* Variable to define feature engine errors */
-    uint8_t feature_engine_err_reg_lsb = 0, feature_engine_err_reg_msb = 0;
 
     for (loop = 0; loop < BMI3_FOC_SAMPLE_LIMIT; loop++)
     {
         try_cnt = 5;
 
-        while (try_cnt && (!(reg_status)))
+        while (try_cnt && (!(reg_status & BMI3_DRDY_ACC_MASK)))
         {
             /* 20ms delay for 50Hz ODR */
             dev->delay_us(20000, dev->intf_ptr);
@@ -8365,7 +8329,7 @@ static int8_t perform_accel_foc(const struct bmi3_accel_foc_g_value *accel_g_val
             try_cnt--;
         }
 
-        if ((rslt == BMI3_OK) && (reg_status))
+        if ((rslt == BMI3_OK) && (reg_status & BMI3_DRDY_ACC_MASK))
         {
             rslt = get_accel_sensor_data(&accel_value[loop].sens_data.acc, BMI3_REG_ACC_DATA_X, dev);
         }
@@ -8390,52 +8354,28 @@ static int8_t perform_accel_foc(const struct bmi3_accel_foc_g_value *accel_g_val
         accel_avg.y = (int16_t)(temp.y / 128);
         accel_avg.z = (int16_t)(temp.z / 128);
 
-        /* Get the exact range value */
-        map_accel_range(acc_cfg->range, &range);
-
-        /* Get the smallest possible measurable acceleration level given the range and
-         * resolution */
-        lsb_per_g = (uint16_t)(power(2, dev->resolution) / (2 * range));
-
-        /* Compensate acceleration data against gravity */
-        comp_for_gravity(lsb_per_g, accel_g_value, &accel_avg, &delta);
-
-        /* Scale according to offset register resolution */
-        scale_accel_offset(range, &delta, &offset);
-
-        /* Invert the accelerometer offset data */
-        invert_accel_offset(&offset);
-
-        /* Disable accel */
-        rslt = bmi3_set_regs(BMI3_REG_ACC_CONF, acc_conf_data, 2, dev);
+        rslt = get_accel_config(acc_cfg, dev);
 
         if (rslt == BMI3_OK)
         {
+            /* Get the exact range value */
+            map_accel_range(acc_cfg->range, &range);
+
+            /* Get the smallest possible measurable acceleration level given the range and
+             * resolution */
+            lsb_per_g = (uint16_t)(power(2, dev->resolution) / (2 * range));
+
+            /* Compensate acceleration data against gravity */
+            comp_for_gravity(lsb_per_g, accel_g_value, &accel_avg, &delta);
+
+            /* Scale according to offset register resolution */
+            scale_accel_offset(range, &delta, &offset, dev);
+
+            /* Invert the accelerometer offset data */
+            invert_accel_offset(&offset);
+
             /* Write offset data in the offset compensation register */
-            rslt = bmi3_set_user_acc_off_dgain(&offset, dev);
-
-            if (rslt == BMI3_OK)
-            {
-                rslt = bmi3_set_command_register(BMI3_CMD_USR_GAIN_OFFS_UPDATE, dev);
-            }
-        }
-
-        if (rslt == BMI3_OK)
-        {
-            for (loop = 0; loop < time_out; loop++)
-            {
-                dev->delay_us(accel_foc_delay, dev->intf_ptr);
-
-                rslt = bmi3_get_feature_engine_error_status(&feature_engine_err_reg_lsb,
-                                                            &feature_engine_err_reg_msb,
-                                                            dev);
-
-                if ((feature_engine_err_reg_lsb & BMI3_NO_ERROR_MASK) &&
-                    (feature_engine_err_reg_msb & (BMI3_UGAIN_OFFS_UPD_COMPLETE_MASK >> 8)))
-                {
-                    break;
-                }
-            }
+            rslt = bmi3_set_acc_dp_off_dgain(&offset, dev);
         }
     }
 
@@ -8520,76 +8460,47 @@ static void comp_for_gravity(uint16_t lsb_per_g,
  */
 static void scale_accel_offset(uint8_t range,
                                const struct bmi3_offset_delta *comp_data,
-                               struct bmi3_acc_usr_gain_offset *data)
+                               struct bmi3_acc_dp_gain_offset *data,
+                               const struct bmi3_dev *dev)
 {
-    /* Variable to store the position of bit having 3.9mg resolution */
-    int8_t bit_pos_3_9mg;
+    uint8_t bit_pos;
+    uint8_t scale_factor;
 
-    /* Variable to store the position previous of bit having 3.9mg resolution */
-    int8_t bit_pos_3_9mg_prev_bit;
-
-    /* Variable to store the round-off value */
-    uint8_t round_off;
-
-    /* Find the bit position of 3.9mg */
-    bit_pos_3_9mg = get_bit_pos_3_9mg(range);
-
-    /* Round off, consider if the next bit is high */
-    bit_pos_3_9mg_prev_bit = bit_pos_3_9mg - 1;
-    round_off = (uint8_t)(power(2, ((uint8_t) bit_pos_3_9mg_prev_bit)));
-
-    /* Scale according to offset register resolution */
-    data->acc_usr_off_x = (uint8_t)((comp_data->x + round_off) / power(2, ((uint8_t) bit_pos_3_9mg)));
-    data->acc_usr_off_y = (uint8_t)((comp_data->y + round_off) / power(2, ((uint8_t) bit_pos_3_9mg)));
-    data->acc_usr_off_z = (uint8_t)((comp_data->z + round_off) / power(2, ((uint8_t) bit_pos_3_9mg)));
-}
-
-/*!
- * @brief This internal API finds the bit position of 3.9mg according to given
- * range and resolution.
- */
-static int8_t get_bit_pos_3_9mg(uint8_t range)
-{
-    /* Variable to store the bit position of 3.9mg resolution */
-    int8_t bit_pos_3_9mg;
-
-    /* Variable to shift the bits according to the resolution */
-    uint32_t divisor = 1;
-
-    /* Scaling factor to get the bit position of 3.9 mg resolution */
-    int16_t scale_factor = BMI3_FOC_INVERT_VALUE;
-
-    /* Variable to store temporary value */
-    uint16_t temp;
-
-    /* Shift left by the times of resolution */
-    divisor = divisor << BMI3_16_BIT_RESOLUTION;
-
-    /* Get the bit position to be shifted */
-    temp = (uint16_t)(divisor / (range * 256));
-
-    /* Get the scaling factor until bit position is shifted to last bit */
-    while (temp != 1)
+    switch (range)
     {
-        scale_factor++;
-        temp = temp >> 1;
+        case BMI3_ACC_2G:
+            bit_pos = BMI3_ACC_2G_BIT_POS;
+            break;
+        case BMI3_ACC_4G:
+            bit_pos = BMI3_ACC_4G_BIT_POS;
+            break;
+        case BMI3_ACC_8G:
+            bit_pos = BMI3_ACC_8G_BIT_POS;
+            break;
+        case BMI3_ACC_16G:
+            bit_pos = BMI3_ACC_16G_BIT_POS;
+            break;
+        default:
+            bit_pos = 4;
+            break;
     }
 
-    /* Scaling factor is the bit position of 3.9 mg resolution */
-    bit_pos_3_9mg = (int8_t) scale_factor;
+    scale_factor = (uint8_t)power(2, bit_pos);
 
-    return bit_pos_3_9mg;
+    data->acc_dp_off_x = (uint16_t)((comp_data->x * scale_factor) & dev->accel_bit_width);
+    data->acc_dp_off_y = (uint16_t)((comp_data->y * scale_factor) & dev->accel_bit_width);
+    data->acc_dp_off_z = (uint16_t)((comp_data->z * scale_factor) & dev->accel_bit_width);
 }
 
 /*!
  * @brief This internal API inverts the accelerometer offset data.
  */
-static void invert_accel_offset(struct bmi3_acc_usr_gain_offset *offset_data)
+static void invert_accel_offset(struct bmi3_acc_dp_gain_offset *offset_data)
 {
     /* Get the offset data */
-    offset_data->acc_usr_off_x = (uint8_t)((offset_data->acc_usr_off_x) * (BMI3_FOC_INVERT_VALUE));
-    offset_data->acc_usr_off_y = (uint8_t)((offset_data->acc_usr_off_y) * (BMI3_FOC_INVERT_VALUE));
-    offset_data->acc_usr_off_z = (uint8_t)((offset_data->acc_usr_off_z) * (BMI3_FOC_INVERT_VALUE));
+    offset_data->acc_dp_off_x = (uint16_t)((offset_data->acc_dp_off_x) * (BMI3_FOC_INVERT_VALUE));
+    offset_data->acc_dp_off_y = (uint16_t)((offset_data->acc_dp_off_y) * (BMI3_FOC_INVERT_VALUE));
+    offset_data->acc_dp_off_z = (uint16_t)((offset_data->acc_dp_off_z) * (BMI3_FOC_INVERT_VALUE));
 }
 
 /*!

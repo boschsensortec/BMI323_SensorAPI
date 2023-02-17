@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -26,7 +26,7 @@
 /******************************************************************************/
 /*!         Structure Definition                                              */
 
-/* Structure to define accelerometer and gyroscope configuration. */
+/*! Structure to define accelerometer and gyroscope configuration. */
 struct bmi3_sens_config config[2];
 
 /******************************************************************************/
@@ -76,11 +76,11 @@ int main(void)
     int8_t rslt;
 
     /* Variable to set the data sample rate of i3c sync
-     * 0x0032 is set to 50 samples this value can vary  */
+     * 0x0032 is set to 50 samples this value can vary */
     uint16_t sample_rate = 0x0032;
 
     /* Variable to set the delay time of i3c sync */
-    uint8_t delay_time = 0;
+    uint8_t delay_time = BMI3_I3C_SYNC_DIVISION_FACTOR_11;
 
     /* Variable to set the i3c sync ODR */
     uint8_t odr = BMI3_I3C_SYNC_ODR_50HZ;
@@ -105,19 +105,26 @@ int main(void)
 
     /* Array of accelerometer frames */
 
-    /* Calculation for frame count: Total frame count = FIFO buffer size(2048 bytes)/ Total frames(6 accelerometer) which equals to 341.
+    /* Calculation for frame count:
+     * Total frame count = FIFO buffer size / Total accel frames
+     *                   = (2048 / 6) = 341 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_accel_data[341];
 
     /* Array of gyroscope frames */
 
-    /* Calculation for frame count: Total frame count = FIFO buffer size(2048 bytes)/ Total frames(6 gyroscope) which equals to 341.
+    /* Calculation for frame count:
+     * Total frame count = FIFO buffer size / Total gyro frames
+     *                   = (2048 / 6) = 341 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_gyro_data[341];
 
     /* Array of temperature frames */
 
-    /* Calculation for frame count: Total frame count = Since Temperature runs based on Accel, Accel buffer size is been provided
+    /* Calculation for frame count:
+     * Total frame count = FIFO buffer size / Total temperature frames
+     *                   = (2048 / 6) = 341 frames
+     * NOTE: Since Temperature runs based on Accel, Accel buffer size is been provided
      */
     struct bmi3_fifo_temperature_data fifo_temp_data[341];
 
@@ -254,7 +261,7 @@ int main(void)
                             printf("Gyro data in LSB units and degrees per second\n");
 
                             printf(
-                                "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SENSOR_TIME\n");
+                                "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SensorTime(lsb)\n");
 
                             /* Print the parsed gyroscope data from the FIFO buffer */
                             for (idx = 0; idx < fifoframe.avail_fifo_gyro_frames; idx++)
@@ -280,7 +287,8 @@ int main(void)
                             (void)bmi323_extract_temperature(fifo_temp_data, &fifoframe, &dev);
                             printf("\nParsed temperature data frames: %d\n", fifoframe.avail_fifo_temp_frames);
 
-                            printf("\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SENSOR_TIME\n");
+                            printf(
+                                "\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SensorTime(lsb)\n");
 
                             /* Print the parsed temperature data from the FIFO buffer */
                             for (idx = 0; idx < fifoframe.avail_fifo_temp_frames; idx++)

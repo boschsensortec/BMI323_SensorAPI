@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -26,7 +26,7 @@
 /******************************************************************************/
 /*!         Structure Definition                                              */
 
-/* Structure to define accelerometer and gyroscope configuration. */
+/*! Structure to define accelerometer and gyroscope configuration. */
 struct bmi3_sens_config config[2];
 
 /******************************************************************************/
@@ -80,7 +80,7 @@ int main(void)
     uint16_t sample_rate = 0x0032;
 
     /* Variable to set the delay time of i3c sync */
-    uint8_t delay_time = 0;
+    uint8_t delay_time = BMI3_I3C_SYNC_DIVISION_FACTOR_11;
 
     /* Variable to set the i3c sync ODR */
     uint8_t odr = BMI3_I3C_SYNC_ODR_50HZ;
@@ -104,25 +104,32 @@ int main(void)
     uint8_t fifo_data[BMI323_FIFO_RAW_DATA_BUFFER_SIZE] = { 0 };
 
     /* Set FIFO water-mark level in words */
-    uint16_t fifo_watermark_level = 2030;
+    uint16_t fifo_watermark_level = 800;
 
     uint16_t watermark = 0;
 
     /* Array of accelerometer frames */
 
-    /* Calculation for frame count: Total frame count = FIFO water-mark size(1600 bytes)/ Total frames(6 accelerometer) which equals to 266.
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total accel frames
+     *                   = (1600 / 6) = 266 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_accel_data[266];
 
     /* Array of gyroscope frames */
 
-    /* Calculation for frame count: Total frame count = FIFO water-mark size(1600 bytes)/ Total frames(6 gyroscope) which equals to 266.
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total gyro frames
+     *                   = (1600 / 6) = 266 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_gyro_data[266];
 
     /* Array of temperature frames */
 
-    /* Calculation for frame count: Total frame count = Since Temperature runs based on Accel, Accel buffer size is been provided
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total temperature frames
+     *                   = (1600 / 6) = 266 frames
+     * NOTE: Since Temperature runs based on Accel, Accel buffer size is been provided
      */
     struct bmi3_fifo_temperature_data fifo_temp_data[266];
 
@@ -136,7 +143,7 @@ int main(void)
      * For I2C : BMI3_I2C_INTF
      * For SPI : BMI3_SPI_INTF
      */
-    rslt = bmi3_interface_init(&dev, BMI3_I2C_INTF);
+    rslt = bmi3_interface_init(&dev, BMI3_SPI_INTF);
     bmi3_error_codes_print_result("bmi3_interface_init", rslt);
 
     if (rslt == BMI323_OK)
@@ -269,7 +276,7 @@ int main(void)
                             printf("Gyro data in LSB units and degrees per second\n");
 
                             printf(
-                                "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SENSOR_TIME\n");
+                                "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SensorTime(lsb)\n");
 
                             /* Print the parsed gyroscope data from the FIFO buffer */
                             for (idx = 0; idx < fifoframe.avail_fifo_gyro_frames; idx++)
@@ -295,7 +302,8 @@ int main(void)
                             (void)bmi323_extract_temperature(fifo_temp_data, &fifoframe, &dev);
                             printf("\nParsed temperature data frames: %d\n", fifoframe.avail_fifo_temp_frames);
 
-                            printf("\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SENSOR_TIME\n");
+                            printf(
+                                "\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SensorTime(lsb)\n");
 
                             /* Print the parsed temperature data from the FIFO buffer */
                             for (idx = 0; idx < fifoframe.avail_fifo_temp_frames; idx++)
@@ -347,11 +355,11 @@ static int8_t set_sensor_config(struct bmi3_dev *dev)
     /* Configure the accel and gyro settings */
     config[ACCEL].cfg.acc.bwp = BMI3_ACC_BW_ODR_QUARTER;
     config[ACCEL].cfg.acc.range = BMI3_ACC_RANGE_2G;
-    config[ACCEL].cfg.acc.acc_mode = BMI3_ACC_MODE_LOW_PWR;
+    config[ACCEL].cfg.acc.acc_mode = BMI3_ACC_MODE_NORMAL;
 
     config[GYRO].cfg.gyr.bwp = BMI3_GYR_BW_ODR_HALF;
     config[GYRO].cfg.gyr.range = BMI3_GYR_RANGE_125DPS;
-    config[GYRO].cfg.gyr.gyr_mode = BMI3_GYR_MODE_LOW_PWR;
+    config[GYRO].cfg.gyr.gyr_mode = BMI3_ACC_MODE_NORMAL;
 
     rslt = bmi323_set_sensor_config(config, 2, dev);
     bmi3_error_codes_print_result("set_sensor_fifo_config", rslt);

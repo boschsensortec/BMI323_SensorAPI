@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -56,8 +56,6 @@ int main(void)
         /* Initialize bmi323. */
         rslt = bmi323_init(&dev);
         bmi3_error_codes_print_result("bmi323_init", rslt);
-
-        rslt = bmi323_configure_enhanced_flexibility(&dev);
 
         if (rslt == BMI323_OK)
         {

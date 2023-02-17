@@ -1,40 +1,40 @@
-﻿/**
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
- *
- * BSD-3-Clause
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @file       bmi3_defs.h
- * @date       2022-08-31
- * @version    v2.0.0
- *
- */
+/**
+* Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
+*
+* BSD-3-Clause
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its
+*    contributors may be used to endorse or promote products derived from
+*    this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+* @file       bmi3_defs.h
+* @date       2023-02-17
+* @version    v2.1.0
+*
+*/
  #ifndef _BMI3_DEFS_H
  #define _BMI3_DEFS_H
 
@@ -151,6 +151,8 @@
 #define BMI3_E_DATA_RDY_INT_FAILED                   INT8_C(-10)
 #define BMI3_E_INVALID_FOC_POSITION                  INT8_C(-11)
 #define BMI3_E_INVALID_ST_SELECTION                  INT8_C(-12)
+#define BMI3_E_OUT_OF_RANGE                          INT8_C(-13)
+#define BMI3_E_FEATURE_ENGINE_STATUS                 INT8_C(-14)
 
 /*! BMI3 Commands */
 #define BMI3_CMD_SELF_TEST_TRIGGER                   UINT16_C(0x0100)
@@ -158,7 +160,6 @@
 #define BMI3_CMD_SELF_CALIB_ABORT                    UINT16_C(0x0200)
 #define BMI3_CMD_I3C_TCSYNC_UPDATE                   UINT16_C(0x0201)
 #define BMI3_CMD_AXIS_MAP_UPDATE                     UINT16_C(0x0300)
-#define BMI3_CMD_USR_GAIN_OFFS_UPDATE                UINT16_C(0x0301)
 #define BMI3_CMD_1                                   UINT16_C(0x64AD)
 #define BMI3_CMD_2                                   UINT16_C(0xD3AC)
 #define BMI3_CMD_SOFT_RESET                          UINT16_C(0xDEAF)
@@ -445,6 +446,9 @@ in INT_STATUS_INT1/2. */
 
 /*! Chip id. */
 #define BMI3_CHIP_ID_MASK                            UINT16_C(0x00FF)
+
+#define BMI3_REV_ID_MASK                             UINT8_C(0xF0)
+#define BMI3_REV_ID_POS                              UINT8_C(4)
 
 /*! Fatal Error, chip is not in operational state (Boot-, power-system). This flag will be reset only by power-on-reset
  * or soft-reset. */
@@ -1027,20 +1031,11 @@ in INT_STATUS_INT1/2. */
 /*! ODR clock deviation */
 #define BMI3_ODR_DEVIATION_MASK                      UINT16_C(0x001F)
 
-/*! Data path register for the temperature independent accelerometer offset of axis x */
-#define BMI3_ACC_DP_OFF_X_MASK                       UINT16_C(0x3FFF)
-
 /*! Data path register for the temperature independent accelerometer re-scale of axis z */
 #define BMI3_ACC_DP_DGAIN_X_MASK                     UINT16_C(0x00FF)
 
-/*! Data path register for the temperature independent accelerometer offset of axis y */
-#define BMI3_ACC_DP_OFF_Y_MASK                       UINT16_C(0x3FFF)
-
 /*! Data path register for the temperature independent accelerometer re-scale of axis z */
 #define BMI3_ACC_DP_DGAIN_Y_MASK                     UINT16_C(0x00FF)
-
-/*! Data path register for the temperature independent accelerometer offset of axis z */
-#define BMI3_ACC_DP_OFF_Z_MASK                       UINT16_C(0x3FFF)
 
 /*! Data path register for the temperature independent accelerometer re-scale of axis z */
 #define BMI3_ACC_DP_DGAIN_Z_MASK                     UINT16_C(0x00FF)
@@ -1320,6 +1315,10 @@ in INT_STATUS_INT1/2. */
 #define BMI3_GYR_USR_GAIN_X_MASK                     UINT16_C(0x007F)
 #define BMI3_GYR_USR_GAIN_Y_MASK                     UINT16_C(0x007F)
 #define BMI3_GYR_USR_GAIN_Z_MASK                     UINT16_C(0x007F)
+
+/*! Data path register for the temperature independent accelerometer offset of axis x */
+#define BMI3_ACC_DP_OFF_XYZ_13_BIT_MASK              UINT16_C(0x1FFF)
+#define BMI3_ACC_DP_OFF_XYZ_14_BIT_MASK              UINT16_C(0x3FFF)
 
 /*! Bit position definitions for BMI3 accel gyro user gain and offset */
 #define BMI3_GYR_OFF_GAIN_RESET_POS                  UINT8_C(1)
@@ -1659,59 +1658,89 @@ in INT_STATUS_INT1/2. */
 /*! @name       FOC macros                                                    */
 /******************************************************************************/
 
-/*! Macro to define the accel FOC range */
-#define BMI3_ACC_FOC_2G_REF                          UINT16_C(16384)
-#define BMI3_ACC_FOC_4G_REF                          UINT16_C(8192)
-#define BMI3_ACC_FOC_8G_REF                          UINT16_C(4096)
-#define BMI3_ACC_FOC_16G_REF                         UINT16_C(2048)
+/* Reference value with positive and negative noise range in lsb */
 
-#define BMI3_FOC_SAMPLE_LIMIT                        UINT8_C(128)
+/*
+ * As per datasheet, Zero-g offset : +/- 50mg
+ *
+ * In range 2G,  1G is 16384. so, 16384 x 50 x (10 ^ -3) = 819
+ * In range 4G,  1G is 8192.  so,  8192 x 50 x (10 ^ -3) = 410
+ * In range 8G,  1G is 4096.  so,  4096 x 50 x (10 ^ -3) = 205
+ * In range 16G, 1G is 2048.  so,  2048 x 50 x (10 ^ -3) = 102
+ */
+#define BMI3_ACC_FOC_2G_REF           UINT16_C(16384)
+#define BMI3_ACC_FOC_4G_REF           UINT16_C(8192)
+#define BMI3_ACC_FOC_8G_REF           UINT16_C(4096)
+#define BMI3_ACC_FOC_16G_REF          UINT16_C(2048)
 
-#define BMI3_MAX_NOISE_LIMIT(RANGE_VALUE)            (RANGE_VALUE + UINT16_C(2050))
-#define BMI3_MIN_NOISE_LIMIT(RANGE_VALUE)            (RANGE_VALUE - UINT16_C(2050))
+#define BMI3_ACC_FOC_2G_OFFSET        UINT16_C(819)
+#define BMI3_ACC_FOC_4G_OFFSET        UINT16_C(410)
+#define BMI3_ACC_FOC_8G_OFFSET        UINT16_C(205)
+#define BMI3_ACC_FOC_16G_OFFSET       UINT16_C(102)
+
+#define BMI3_FOC_SAMPLE_LIMIT         UINT8_C(128)
+
+#define BMI3_ACC_2G_MAX_NOISE_LIMIT   (BMI3_ACC_FOC_2G_REF + BMI3_ACC_FOC_2G_OFFSET)
+#define BMI3_ACC_2G_MIN_NOISE_LIMIT   (BMI3_ACC_FOC_2G_REF - BMI3_ACC_FOC_2G_OFFSET)
+#define BMI3_ACC_4G_MAX_NOISE_LIMIT   (BMI3_ACC_FOC_4G_REF + BMI3_ACC_FOC_4G_OFFSET)
+#define BMI3_ACC_4G_MIN_NOISE_LIMIT   (BMI3_ACC_FOC_4G_REF - BMI3_ACC_FOC_4G_OFFSET)
+#define BMI3_ACC_8G_MAX_NOISE_LIMIT   (BMI3_ACC_FOC_8G_REF + BMI3_ACC_FOC_8G_OFFSET)
+#define BMI3_ACC_8G_MIN_NOISE_LIMIT   (BMI3_ACC_FOC_8G_REF - BMI3_ACC_FOC_8G_OFFSET)
+#define BMI3_ACC_16G_MAX_NOISE_LIMIT  (BMI3_ACC_FOC_16G_REF + BMI3_ACC_FOC_16G_OFFSET)
+#define BMI3_ACC_16G_MIN_NOISE_LIMIT  (BMI3_ACC_FOC_16G_REF - BMI3_ACC_FOC_16G_OFFSET)
 
 /*! Macro to define accelerometer configuration value for FOC */
-#define BMI3_FOC_ACC_CONF_VAL_LSB                    UINT8_C(0xB7)
-#define BMI3_FOC_ACC_CONF_VAL_MSB                    UINT8_C(0x40)
+#define BMI3_FOC_ACC_CONF_VAL_LSB     UINT8_C(0xB7)
+#define BMI3_FOC_ACC_CONF_VAL_MSB     UINT8_C(0x40)
 
 /*! Macro to define X Y and Z axis for an array */
-#define BMI3_X_AXIS                                  UINT8_C(0)
-#define BMI3_Y_AXIS                                  UINT8_C(1)
-#define BMI3_Z_AXIS                                  UINT8_C(2)
+#define BMI3_X_AXIS                   UINT8_C(0)
+#define BMI3_Y_AXIS                   UINT8_C(1)
+#define BMI3_Z_AXIS                   UINT8_C(2)
 
-#define BMI3_FOC_INVERT_VALUE                        INT8_C(-1)
+#define BMI3_FOC_INVERT_VALUE         INT8_C(-1)
 
 /*! For defining absolute values */
-#define BMI3_ABS(a)                                  ((a) > 0 ? (a) : -(a))
+#define BMI3_ABS(a)                   ((a) > 0 ? (a) : -(a))
 
 /*! Sensortime resolution in seconds */
-#define BMI3_SENSORTIME_RESOLUTION                   0.0000390625f
+#define BMI3_SENSORTIME_RESOLUTION    0.0000390625f
 
 /*! Maximum number of interrupt pins */
-#define BMI3_INT_PIN_MAX_NUM                         UINT8_C(2)
+#define BMI3_INT_PIN_MAX_NUM          UINT8_C(2)
 
 /*! Maximum available register length */
-#define BMI3_MAX_LEN                                 UINT8_C(128)
+#define BMI3_MAX_LEN                  UINT8_C(128)
+
+#define BMI3_ACC_2G                   UINT8_C(2)
+#define BMI3_ACC_4G                   UINT8_C(4)
+#define BMI3_ACC_8G                   UINT8_C(8)
+#define BMI3_ACC_16G                  UINT8_C(16)
+
+#define BMI3_ACC_2G_BIT_POS           UINT8_C(1)
+#define BMI3_ACC_4G_BIT_POS           UINT8_C(2)
+#define BMI3_ACC_8G_BIT_POS           UINT8_C(3)
+#define BMI3_ACC_16G_BIT_POS          UINT8_C(4)
 
 /******************************************************************************/
 /*! @name       Gyro self-calibration/self-test coefficient macros  */
 /******************************************************************************/
-#define BMI3_SC_ST_VALUE_0                           UINT16_C(0x5A2E)
-#define BMI3_SC_ST_VALUE_1                           UINT16_C(0x9219)
-#define BMI3_SC_ST_VALUE_2                           UINT16_C(0x5637)
-#define BMI3_SC_ST_VALUE_3                           UINT16_C(0xFFE8)
-#define BMI3_SC_ST_VALUE_4                           UINT16_C(0xFFEF)
-#define BMI3_SC_ST_VALUE_5                           UINT16_C(0x000D)
-#define BMI3_SC_ST_VALUE_6                           UINT16_C(0x07CA)
-#define BMI3_SC_ST_VALUE_7                           UINT16_C(0xFFCD)
-#define BMI3_SC_ST_VALUE_8                           UINT16_C(0xEF6C)
+#define BMI3_SC_ST_VALUE_0            UINT16_C(0x5A2E)
+#define BMI3_SC_ST_VALUE_1            UINT16_C(0x9219)
+#define BMI3_SC_ST_VALUE_2            UINT16_C(0x5637)
+#define BMI3_SC_ST_VALUE_3            UINT16_C(0xFFE8)
+#define BMI3_SC_ST_VALUE_4            UINT16_C(0xFFEF)
+#define BMI3_SC_ST_VALUE_5            UINT16_C(0x000D)
+#define BMI3_SC_ST_VALUE_6            UINT16_C(0x07CA)
+#define BMI3_SC_ST_VALUE_7            UINT16_C(0xFFCD)
+#define BMI3_SC_ST_VALUE_8            UINT16_C(0xEF6C)
 
-#define BMI3_SC_SENSITIVITY_EN                       UINT8_C(1)
-#define BMI3_SC_OFFSET_EN                            UINT8_C(2)
+#define BMI3_SC_SENSITIVITY_EN        UINT8_C(1)
+#define BMI3_SC_OFFSET_EN             UINT8_C(2)
 
 /*! Self-calibration enable disable macros */
-#define BMI3_SC_APPLY_CORR_DIS                       UINT8_C(0)
-#define BMI3_SC_APPLY_CORR_EN                        UINT8_C(4)
+#define BMI3_SC_APPLY_CORR_DIS        UINT8_C(0)
+#define BMI3_SC_APPLY_CORR_EN         UINT8_C(4)
 
 /********************************************************* */
 /*!               Function Pointers                       */
@@ -1819,14 +1848,14 @@ struct bmi3_fifo_frame
     uint16_t length;
 
     /*! Enables type of data to be streamed - accelerometer,
-     *  gyroscope
+     *  gyroscope and temperature
      */
     uint16_t available_fifo_sens;
 
     /*! Water-mark level for water-mark interrupt */
     uint16_t wm_lvl;
 
-    /*! Available fifo length */
+    /*! Available fifo length in words */
     uint16_t available_fifo_len;
 
     /*! To store available fifo accel frames */
@@ -1886,8 +1915,11 @@ struct bmi3_dev
     /*! Write function pointer */
     bmi3_write_fptr_t write;
 
-    /*!  Delay function pointer */
+    /*! Delay function pointer */
     bmi3_delay_us_fptr_t delay_us;
+
+    /*! Accel bit width */
+    uint16_t accel_bit_width;
 };
 
 /*!
@@ -2694,13 +2726,13 @@ struct bmi3_acc_dp_gain_offset
     uint16_t acc_dp_off_z;
 
     /*! Accel dp gain x-axis */
-    uint8_t acc_dp_gain_x;
+    uint8_t acc_dp_dgain_x;
 
     /*! Accel dp gain y-axis */
-    uint8_t acc_dp_gain_y;
+    uint8_t acc_dp_dgain_y;
 
     /*! Accel dp gain z-axis */
-    uint8_t acc_dp_gain_z;
+    uint8_t acc_dp_dgain_z;
 };
 
 /*!
@@ -2718,13 +2750,13 @@ struct bmi3_gyr_dp_gain_offset
     uint16_t gyr_dp_off_z;
 
     /*! Gyro dp gain x-axis */
-    uint8_t gyr_dp_gain_x;
+    uint8_t gyr_dp_dgain_x;
 
     /*! Gyro dp gain y-axis */
-    uint8_t gyr_dp_gain_y;
+    uint8_t gyr_dp_dgain_y;
 
     /*! Gyro dp gain z-axis */
-    uint8_t gyr_dp_gain_z;
+    uint8_t gyr_dp_dgain_z;
 };
 
 /*!

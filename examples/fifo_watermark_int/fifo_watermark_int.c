@@ -1,5 +1,5 @@
 /**\
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
+ * Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  **/
@@ -23,7 +23,7 @@
 /******************************************************************************/
 /*!          Structure declaration                                            */
 
-/* Structure to define accelerometer and gyroscope configuration. */
+/*! Structure to define accelerometer and gyroscope configuration. */
 struct bmi3_sens_config config[2];
 
 /******************************************************************************/
@@ -80,26 +80,33 @@ int main(void)
     uint16_t watermark = 0;
 
     /* Set FIFO water-mark level in words */
-    uint16_t fifo_watermark_level = 2016;
+    uint16_t fifo_watermark_level = 800;
 
     /* Number of bytes of FIFO data */
     uint8_t fifo_data[BMI323_FIFO_RAW_DATA_BUFFER_SIZE] = { 0 };
 
     /* Array of accelerometer frames */
 
-    /* Calculation for frame count: Total frame count = FIFO water-mark size(1600 bytes)/ Total frames(6 accelerometer) which equals to 266.
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total accel frames
+     *                   = (1600 / 6) = 266 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_accel_data[266];
 
     /* Array of gyroscope frames */
 
-    /* Calculation for frame count: Total frame count = FIFO water-mark size(1600 bytes)/ Total frames(6 gyroscope) which equals to 266.
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total gyro frames
+     *                   = (1600 / 6) = 266 frames
      */
     struct bmi3_fifo_sens_axes_data fifo_gyro_data[266];
 
     /* Array of temperature frames */
 
-    /* Calculation for frame count: Total frame count = Since Temperature runs based on Accel, Accel buffer size is been provided
+    /* Calculation for frame count:
+     * Total frame count = FIFO water-mark size(in bytes) / Total temperature frames
+     *                   = (1600 / 6) = 266 frames
+     * NOTE: Since Temperature runs based on Accel, Accel buffer size is been provided
      */
     struct bmi3_fifo_temperature_data fifo_temp_data[266];
 
@@ -111,26 +118,12 @@ int main(void)
 
     uint16_t fifo_length = 0;
 
-    /* Number of accel frames to be extracted from FIFO
+    /* Number of accel, gyro and temperature frames to be extracted from FIFO
      * Calculation:
-     * fifo_watermark_level = 1600, accel_frame_len = 6, gyro_frame_len = 6, temp_frame_len = 2, sensor_frame_len = 2
-     * fifo_accel_frame_count = (1600 / (6+6+2+2)) = 100 frames
+     * fifo_watermark_level = 1600(in bytes), accel_frame_len = 6, gyro_frame_len = 6, temp_frame_len = 2, sensortime_frame_len = 2
+     * fifo_frame_length = (1600 / (6+6+2+2)) = 100 frames
      */
-    uint16_t fifo_accel_frame_length = 100;
-
-    /* Number of gyro frames to be extracted from FIFO
-     * Calculation:
-     * fifo_watermark_level = 1600, accel_frame_len = 6, gyro_frame_len = 6, temp_frame_len = 2, sensor_frame_len = 2
-     * fifo_accel_frame_count = (1600 / (6+6+2+2)) = 100 frames
-     */
-    uint16_t fifo_gyro_frame_length = 100;
-
-    /* Number of temperature frames to be extracted from FIFO
-     * Calculation:
-     * fifo_watermark_level = 1600, accel_frame_len = 6, gyro_frame_len = 6, temp_frame_len = 2, sensor_frame_len = 2
-     * fifo_temp_frame_count = (1600 / (6+6+2+2)) = 100 frames
-     */
-    uint16_t fifo_temp_frame_length = 100;
+    uint16_t fifo_frame_length = 100;
 
     /* Variable to store temperature */
     float temperature_value;
@@ -202,7 +195,7 @@ int main(void)
 
             if (rslt == BMI323_OK)
             {
-                printf("\nRequested accelerometer data frames before parsing: %d\n", fifo_accel_frame_length);
+                printf("\nRequested accelerometer data frames before parsing: %d\n", fifo_frame_length);
 
                 /* Parse the FIFO data to extract accelerometer data from the FIFO buffer */
                 (void)bmi323_extract_accel(fifo_accel_data, &fifoframe, &dev);
@@ -233,7 +226,7 @@ int main(void)
                            fifo_accel_data[idx].sensor_time);
                 }
 
-                printf("\nRequested gyro data frames before parsing: %d\n", fifo_gyro_frame_length);
+                printf("\nRequested gyro data frames before parsing: %d\n", fifo_frame_length);
 
                 /* Parse the FIFO data to extract gyroscope data from the FIFO buffer */
                 (void)bmi323_extract_gyro(fifo_gyro_data, &fifoframe, &dev);
@@ -242,7 +235,7 @@ int main(void)
                 printf("\nGyro data in LSB units and degrees per second\n");
 
                 printf(
-                    "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SENSOR_TIME\n");
+                    "\nGYRO_DATA_SET, Gyr_Raw_X, Gyr_Raw_Y, Gyr_Raw_Z, Gyr_dps_X, Gyr_dps_Y, Gyr_dps_Z, SensorTime(lsb)\n");
 
                 /* Print the parsed gyroscope data from the FIFO buffer */
                 for (idx = 0; idx < fifoframe.avail_fifo_gyro_frames; idx++)
@@ -264,13 +257,13 @@ int main(void)
                            fifo_gyro_data[idx].sensor_time);
                 }
 
-                printf("\nRequested temperature data frames before parsing: %d", fifo_temp_frame_length);
+                printf("\nRequested temperature data frames before parsing: %d", fifo_frame_length);
 
                 /* Parse the FIFO data to extract temperature data from the FIFO buffer */
                 (void)bmi323_extract_temperature(fifo_temp_data, &fifoframe, &dev);
                 printf("\nParsed temperature data frames: %d\n", fifoframe.avail_fifo_temp_frames);
 
-                printf("\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SENSOR_TIME\n");
+                printf("\nTEMP_DATA_SET, TEMP_DATA_LSB, Temperature data (Degree celcius), SensorTime(lsb)\n");
 
                 /* Print the parsed temperature data from the FIFO buffer */
                 for (idx = 0; idx < fifoframe.avail_fifo_temp_frames; idx++)

@@ -1,40 +1,40 @@
 /**
- * Copyright (c) 2022 Bosch Sensortec GmbH. All rights reserved.
- *
- * BSD-3-Clause
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @file       bmi323.h
- * @date       2022-08-31
- * @version    v2.0.0
- *
- */
+* Copyright (c) 2023 Bosch Sensortec GmbH. All rights reserved.
+*
+* BSD-3-Clause
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+*
+* 3. Neither the name of the copyright holder nor the names of its
+*    contributors may be used to endorse or promote products derived from
+*    this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*
+* @file       bmi323.h
+* @date       2023-02-17
+* @version    v2.1.0
+*
+*/
 
 /*!
  * @defgroup bmi323 BMI323
@@ -899,9 +899,9 @@ int8_t bmi323_extract_temperature(struct bmi3_fifo_temperature_data *temp_data,
  * \code
  * int8_t bmi323_set_fifo_wm(uint16_t fifo_wm, struct bmi3_dev *dev);
  * \endcode
- * @details This API sets the FIFO water-mark level which is set in the sensor.
+ * @details This API sets the FIFO water-mark level in words.
  *
- * @param[in] fifo_wm          : Variable to set FIFO water-mark level.
+ * @param[in] fifo_wm          : Variable to set FIFO water-mark level in words.
  * @param[in] dev              : Structure instance of bmi3_dev.
  *
  * @return Result of API execution status
@@ -924,9 +924,9 @@ int8_t bmi323_set_fifo_wm(uint16_t fifo_wm, struct bmi3_dev *dev);
  * \code
  * int8_t bmi323_get_fifo_wm(uint16_t *fifo_wm, struct bmi3_dev *dev);
  * \endcode
- * @details This API sets the FIFO water-mark level which is set in the sensor.
+ * @details This API reads the FIFO water-mark level in words.
  *
- * @param[out] fifo_wm         : Variable to set FIFO water-mark level.
+ * @param[out] fifo_wm         : Variable to get FIFO water-mark level in words.
  * @param[in] dev              : Structure instance of bmi3_dev.
  *
  * @return Result of API execution status
@@ -1008,13 +1008,13 @@ int8_t bmi323_get_fifo_config(uint16_t *fifo_config, struct bmi3_dev *dev);
  * int8_t bmi323_get_fifo_length(uint16_t *fifo_avail_len, struct bmi3_dev *dev);
  * \endcode
  * @details This API gets the length of FIFO data available in the sensor in
- * bytes.
+ * words.
  *
  * @param[out] fifo_avail_len  : Pointer variable to store the value of FIFO byte
  *                               counter.
  * @param[in]  dev             : Structure instance of bmi3_dev.
  *
- * @note The byte counter is updated each time a complete frame is read or
+ * @note The word counter is updated each time a complete frame was read or
  * written.
  *
  * @return Result of API execution status
@@ -1545,24 +1545,6 @@ int8_t bmi323_get_user_acc_off_dgain(struct bmi3_acc_usr_gain_offset *acc_usr_ga
 
 /*!
  * \ingroup bmi323ApiUserOffset
- * \page bmi323_api_bmi323_get_user_gyro_off_dgain bmi323_get_user_gyro_off_dgain
- * \code
- * int8_t bmi323_get_user_gyro_off_dgain(struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev);
- * \endcode
- * @details This API gets user offset dgain for the sensor which stores self-calibrated values for gyro.
- *
- * @param[in, out] gyr_usr_gain_offset  : Structure instance of bmi3_gyr_usr_gain_offset.
- * @param[in] dev                       : Structure instance of bmi3_dev.
- *
- *  @return Result of API execution status
- *
- *  @retval 0 -> Success
- *  @retval < 0 -> Fail
- */
-int8_t bmi323_get_user_gyro_off_dgain(struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev);
-
-/*!
- * \ingroup bmi323ApiUserOffset
  * \page bmi323_api_bmi323_set_user_acc_off_dgain bmi323_set_user_acc_off_dgain
  * \code
  * int8_t bmi323_set_user_acc_off_dgain(const struct bmi3_acc_usr_gain_offset *acc_usr_gain_offset, struct bmi3_dev *dev);
@@ -1578,24 +1560,6 @@ int8_t bmi323_get_user_gyro_off_dgain(struct bmi3_gyr_usr_gain_offset *gyr_usr_g
  *  @retval < 0 -> Fail
  */
 int8_t bmi323_set_user_acc_off_dgain(const struct bmi3_acc_usr_gain_offset *acc_usr_gain_offset, struct bmi3_dev *dev);
-
-/*!
- * \ingroup bmi323ApiUserOffset
- * \page bmi323_api_bmi323_set_user_gyr_off_dgain bmi323_set_user_gyr_off_dgain
- * \code
- * int8_t bmi323_set_user_gyr_off_dgain(const struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev);
- * \endcode
- * @details This API sets user offset dgain for the sensor which stores self-calibrated values for gyro.
- *
- * @param[in, out] gyr_usr_gain_offset  : Structure instance of bmi3_gyr_usr_gain_offset.
- * @param[in] dev                       : Structure instance of bmi3_dev.
- *
- *  @return Result of API execution status
- *
- *  @retval 0 -> Success
- *  @retval < 0 -> Fail
- */
-int8_t bmi323_set_user_gyr_off_dgain(const struct bmi3_gyr_usr_gain_offset *gyr_usr_gain_offset, struct bmi3_dev *dev);
 
 /**
  * \ingroup bmi323
