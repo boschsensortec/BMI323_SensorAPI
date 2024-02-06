@@ -1713,4 +1713,8 @@ int8_t bmi323_get_acc_gyr_off_gain_reset(uint8_t *acc_off_gain_reset, uint8_t *g
  */
 int8_t bmi323_set_acc_gyr_off_gain_reset(uint8_t acc_off_gain_reset, uint8_t gyr_off_gain_reset, struct bmi3_dev *dev);
 
+#ifdef __cplusplus
+}
+#endif /* End of CPP guard */
+
 #endif /* End of _BMI323_H */
